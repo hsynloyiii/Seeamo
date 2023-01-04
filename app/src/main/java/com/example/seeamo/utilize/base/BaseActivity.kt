@@ -23,9 +23,9 @@ abstract class BaseActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         layoutHelper = LayoutHelper(this)
+        baseColor = BaseColor(this)
         createViews(savedInstanceState)
         setContentView(root ?: View(this))
-        baseColor = BaseColor(this)
         setup(savedInstanceState)
     }
 

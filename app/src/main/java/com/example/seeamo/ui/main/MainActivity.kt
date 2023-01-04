@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
@@ -22,6 +23,7 @@ import com.example.seeamo.ui.trend.TrendFragment
 import com.example.seeamo.utilize.base.BaseActivity
 import com.example.seeamo.utilize.extensions.applyMarginWindowInsets
 import com.example.seeamo.utilize.extensions.defaultAppearance
+import com.example.seeamo.utilize.extensions.toDp
 import com.example.seeamo.utilize.helper.LayoutHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,6 +50,17 @@ class MainActivity : BaseActivity() {
             id = R.id.main_bottom_navigation
 
             labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_LABELED
+            isItemActiveIndicatorEnabled = false
+            setBackgroundColor(baseColor.background)
+            itemRippleColor = baseColor.baseRippleColorStateList(baseColor.primary)
+            itemTextColor = baseColor.checkedColorStateList(
+                checkedColor = baseColor.darkBlue,
+                unCheckedColor = baseColor.onBackground
+            )
+            itemIconTintList = null
+            itemPaddingTop = 8.toDp(this@MainActivity)
+            itemPaddingBottom = 8.toDp(this@MainActivity)
+            elevation = 0f
         }
         mainLayout.apply {
             addView(
@@ -63,7 +76,7 @@ class MainActivity : BaseActivity() {
                 bottomNavigationView,
                 layoutHelper.createConstraints(
                     LayoutHelper.MATCH_PARENT,
-                    LayoutHelper.WRAP_CONTENT,
+                    25.toDp(this@MainActivity),
                     bottomToBottom = 0
                 )
             )
@@ -81,6 +94,7 @@ class MainActivity : BaseActivity() {
                 fragmentContainerView.context.classLoader,
                 NavHostFragment().javaClass.name
             )
+
         supportFragmentManager.commitNow(allowStateLoss = true) {
             setReorderingAllowed(true)
             add(fragmentContainerView.id, containerFragment)
@@ -142,15 +156,6 @@ class MainActivity : BaseActivity() {
             setupWithNavController(navController)
 
             selectedItemId = menu[0].itemId
-            isItemActiveIndicatorEnabled = false
-            setBackgroundColor(baseColor.background)
-            itemRippleColor = baseColor.baseRippleColorStateList(baseColor.primary)
-            itemTextColor = baseColor.checkedColorStateList(
-                checkedColor = baseColor.dark_blue,
-                unCheckedColor = baseColor.onBackground
-            )
-            itemIconTintList = null
-            elevation = 0f
         }
     }
 

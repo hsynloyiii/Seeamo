@@ -24,8 +24,8 @@
     <path
         android:name="path_3"
         android:pathData="M 59.1 57.1 C 53.9 63.7 11.6 63.5 5.4 57.1 C 0.8 52.4 0.8 24.6 5.4 19.9 C 11.6 13.5 53.9 13.3 59.1 19.9 C 63 24.9 63 52.2 59.1 57.1"
-        android:fillColor="#ffffff"
-        android:strokeColor="#000000"
+        android:fillColor="#c28fef"
+        android:strokeColor="#c28fef"
         android:strokeWidth="1"/>
     <group android:name="group_1">
         <path

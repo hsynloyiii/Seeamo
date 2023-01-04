@@ -53,7 +53,7 @@
                     android:propertyName="strokeColor"
                     android:duration="350"
                     android:valueFrom="#000000"
-                    android:valueTo="#ffffff"
+                    android:valueTo="#c28fef"
                     android:interpolator="@android:interpolator/fast_out_slow_in"/>
             </set>
         </aapt:attr>

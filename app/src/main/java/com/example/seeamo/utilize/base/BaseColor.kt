@@ -143,7 +143,7 @@ class BaseColor(context: Context) {
     val black = context.toThemeAttr(com.example.seeamo.R.attr.black)
     val white = context.toThemeAttr(com.example.seeamo.R.attr.white)
     val blue = context.toThemeAttr(com.example.seeamo.R.attr.blue)
-    val dark_blue = context.toThemeAttr(com.example.seeamo.R.attr.dark_blue)
+    val darkBlue = context.toThemeAttr(com.example.seeamo.R.attr.dark_blue)
     val gray = context.toThemeAttr(com.example.seeamo.R.attr.gray)
     val red = context.toThemeAttr(com.example.seeamo.R.attr.red)
     val transparent = context.getColor(android.R.color.transparent)

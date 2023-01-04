@@ -31,7 +31,7 @@
                     android:propertyName="strokeColor"
                     android:duration="350"
                     android:valueFrom="#000000"
-                    android:valueTo="#ffffff"
+                    android:valueTo="#ff5449"
                     android:valueType="colorType"
                     android:interpolator="@android:interpolator/fast_out_slow_in"/>
             </set>
