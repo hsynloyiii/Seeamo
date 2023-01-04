@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="teal_800">#4CAF50</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#FFFFFFFF</color>
+
+
+    <!-- Primary -->
+    <color name="primary_0">#000000</color>
+    <color name="primary_10">#001E2E</color>
+    <color name="primary_20">#00344C</color>
+    <color name="primary_30">#004C6D</color>
+    <color name="primary_40">#00658F</color>
+    <color name="primary_50">#007FB3</color>
+    <color name="primary_60">#309AD0</color>
+    <color name="primary_70">#53B5ED</color>
+    <color name="primary_80">#80CFFF</color>
+    <color name="primary_90">#C5E7FF</color>
+    <color name="primary_95">#E4F2FF</color>
+    <color name="primary_99">#FAFCFF</color>
+    <color name="primary_100">#FFFFFF</color>
+
+
+    <!-- Secondary -->
+    <color name="secondary_0">#000000</color>
+    <color name="secondary_10">#0B1D28</color>
+    <color name="secondary_20">#21323E</color>
+    <color name="secondary_30">#374956</color>
+    <color name="secondary_40">#4F616E</color>
+    <color name="secondary_50">#677987</color>
+    <color name="secondary_60">#8193A1</color>
+    <color name="secondary_70">#B7C9D8</color>
+    <color name="secondary_80">#B7C9D8</color>
+    <color name="secondary_90">#D2E5F5</color>
+    <color name="secondary_95">#E4F3FF</color>
+    <color name="secondary_99">#FAFCFF</color>
+    <color name="secondary_100">#FFFFFF</color>
+
+
+    <!-- Tertiary -->
+    <color name="tertiary_0">#000000</color>
+    <color name="tertiary_10">#1E1635</color>
+    <color name="tertiary_20">#332B4B</color>
+    <color name="tertiary_30">#4B4263</color>
+    <color name="tertiary_40">#62597C</color>
+    <color name="tertiary_50">#7C7296</color>
+    <color name="tertiary_60">#968BB1</color>
+    <color name="tertiary_70">#B0A5CC</color>
+    <color name="tertiary_80">#CDC1E9</color>
+    <color name="tertiary_90">#E9DDFF</color>
+    <color name="tertiary_95">#F6EEFF</color>
+    <color name="tertiary_99">#FFFBFE</color>
+    <color name="tertiary_100">#FFFFFF</color>
+
+
+    <!-- Error -->
+    <color name="error_0">#000000</color>
+    <color name="error_10">#410001</color>
+    <color name="error_20">#680003</color>
+    <color name="error_30">#930006</color>
+    <color name="error_40">#BA1B1B</color>
+    <color name="error_50">#DD3730</color>
+    <color name="error_60">#FF5449</color>
+    <color name="error_70">#FF897A</color>
+    <color name="error_80">#FFB4A9</color>
+    <color name="error_90">#FFDAD4</color>
+    <color name="error_95">#FFEDE9</color>
+    <color name="error_99">#FCFCFC</color>
+    <color name="error_100">#FFFFFF</color>
+
+
+    <!-- Neutral -->
+    <color name="neutral_0">#000000</color>
+    <color name="neutral_10">#191C1E</color>
+    <color name="neutral_20">#2E3133</color>
+    <color name="neutral_30">#454749</color>
+    <color name="neutral_40">#5C5E61</color>
+    <color name="neutral_50">#75777A</color>
+    <color name="neutral_60">#909194</color>
+    <color name="neutral_70">#AAABAD</color>
+    <color name="neutral_80">#C5C6C9</color>
+    <color name="neutral_90">#E1E2E5</color>
+    <color name="neutral_95">#F0F1F4</color>
+    <color name="neutral_99">#FBFCFF</color>
+    <color name="neutral_100">#FFFFFF</color>
+
+
+    <!-- Neutral Variant -->
+    <color name="neutral_variant_0">#000000</color>
+    <color name="neutral_variant_10">#161C21</color>
+    <color name="neutral_variant_20">#2B3136</color>
+    <color name="neutral_variant_30">#41484D</color>
+    <color name="neutral_variant_40">#595F65</color>
+    <color name="neutral_variant_50">#71787E</color>
+    <color name="neutral_variant_60">#8B9197</color>
+    <color name="neutral_variant_70">#A6ACB2</color>
+    <color name="neutral_variant_80">#C1C7CE</color>
+    <color name="neutral_variant_90">#DDE3EA</color>
+    <color name="neutral_variant_95">#EBF1F8</color>
+    <color name="neutral_variant_99">#FAFCFF</color>
+    <color name="neutral_variant_100">#FFFFFF</color>
+
+    <attr name="black" format="color" />
+    <attr name="white" format="color" />
+    <attr name="blue" format="color" />
+    <attr name="dark_blue" format="color" />
+    <attr name="gray" format="color" />
+    <attr name="red" format="color" />
+
+</resources>

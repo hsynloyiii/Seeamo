@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Seeamo</string>
+
+    <string name="trend">Trend</string>
+    <string name="movie">Movie</string>
+    <string name="series">Series</string>
+    <string name="news">News</string>
+    <string name="menu">Menu</string>
+    <string name="trend_fragment">TrendFragment</string>
+    <string name="movie_fragment">MovieFragment</string>
+    <string name="series_fragment">SeriesFragment</string>
+    <string name="news_fragment">NewsFragment</string>
+    <string name="menu_fragment">MenuFragment</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- MainActivity -->
+    <item name="main_nav" type="id" />
+    <item name="main_bottom_navigation" type="id" />
+    <item name="trend_fragment" type="id" />
+    <item name="movie_fragment" type="id" />
+    <item name="series_fragment" type="id" />
+    <item name="news_fragment" type="id" />
+    <item name="menu_fragment" type="id" />
+
+</resources>
