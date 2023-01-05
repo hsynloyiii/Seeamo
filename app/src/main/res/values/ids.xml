@@ -12,4 +12,7 @@
     <item name="news_fragment" type="id" />
     <item name="menu_fragment" type="id" />
 
+    <!-- TrendFragment -->
+    <item name="trend_fragment_recycler_view" type="id" />
+
 </resources>

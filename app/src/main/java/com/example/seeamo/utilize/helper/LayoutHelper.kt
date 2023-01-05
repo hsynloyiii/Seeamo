@@ -12,6 +12,7 @@ import androidx.annotation.IntDef
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.updateLayoutParams
+import androidx.recyclerview.widget.RecyclerView
 import com.example.seeamo.utilize.extensions.toDp
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.Behavior
@@ -33,7 +34,7 @@ class LayoutHelper(private val context: Context?) {
     }
 
     // RelativeLayout
-    private fun createRelative(
+    fun createRelative(
         width: Int,
         height: Int,
         endMargin: Int = 0,
@@ -50,14 +51,35 @@ class LayoutHelper(private val context: Context?) {
             if (alignRelative >= 0 && anchorRelative >= 0)
                 addRule(alignRelative, anchorRelative)
 
-            if (endMargin != 0)
+            this.marginEnd = endMargin
+            this.topMargin = topMargin
+            this.marginStart = startMargin
+            this.bottomMargin = bottomMargin
+        }
+
+
+    // RelativeLayout
+    fun createRecycler(
+        width: Int,
+        height: Int,
+        margin: Int = 0,
+        endMargin: Int = 0,
+        topMargin: Int = 0,
+        startMargin: Int = 0,
+        bottomMargin: Int = 0
+    ): RecyclerView.LayoutParams =
+        RecyclerView.LayoutParams(getSize(width), getSize(height)).apply {
+            if (margin != 0) {
+                this.marginEnd = margin
+                this.topMargin = margin
+                this.marginStart = margin
+                this.bottomMargin = margin
+            } else {
                 this.marginEnd = endMargin
-            if (topMargin != 0)
                 this.topMargin = topMargin
-            if (startMargin != 0)
                 this.marginStart = startMargin
-            if (bottomMargin != 0)
                 this.bottomMargin = bottomMargin
+            }
         }
 
 

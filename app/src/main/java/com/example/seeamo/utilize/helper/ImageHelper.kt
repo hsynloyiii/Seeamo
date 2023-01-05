@@ -55,6 +55,7 @@ class ImageHelper {
             view: ImageView,
             uri: Uri?,
             cornerSize: Int = 1,
+            transformation: BitmapTransformation = CenterCrop(),
             options: BitmapTransitionOptions = BitmapTransitionOptions.withCrossFade(),
             success: ((bitmap: Bitmap?) -> Unit)? = null,
             failed: (() -> Unit)? = null
@@ -63,7 +64,7 @@ class ImageHelper {
                 .asBitmap()
                 .load(uri)
                 .transition(options)
-                .apply(RequestOptions().transform(RoundedCorners(cornerSize)))
+                .apply(RequestOptions().transform(transformation, RoundedCorners(cornerSize)))
                 .listener(object : RequestListener<Bitmap> {
                     override fun onLoadFailed(
                         e: GlideException?,

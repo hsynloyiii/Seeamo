@@ -11,6 +11,7 @@ import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
@@ -217,8 +218,8 @@ class MainActivity : BaseActivity() {
 
         bottomNavigationView.apply {
             setupWithNavController(navController)
-
-            selectedItemId = menu[0].itemId
+//
+//            selectedItemId = menu[0].itemId
         }
     }
 
