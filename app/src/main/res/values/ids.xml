@@ -3,6 +3,8 @@
 
     <!-- MainActivity -->
     <item name="main_nav" type="id" />
+    <item name="main_toolbar" type="id" />
+    <item name="main_toolbar_search" type="id" />
     <item name="main_bottom_navigation" type="id" />
     <item name="trend_fragment" type="id" />
     <item name="movie_fragment" type="id" />

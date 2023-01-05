@@ -4,8 +4,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.seeamo.utilize.base.BaseColor
 
-fun ViewGroup.defaultAppearance(fitSystem: Boolean = false) {
-    val baseColor = BaseColor(context)
+fun ViewGroup.defaultAppearance(baseColor: BaseColor, fitSystem: Boolean = false) {
     setBackgroundColor(baseColor.background)
     fitsSystemWindows = fitSystem
 }

@@ -1,12 +1,15 @@
 package com.example.seeamo.ui.main
 
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.Menu
+import android.view.MenuItem
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
@@ -21,11 +24,12 @@ import com.example.seeamo.ui.news.NewsFragment
 import com.example.seeamo.ui.series.SeriesFragment
 import com.example.seeamo.ui.trend.TrendFragment
 import com.example.seeamo.utilize.base.BaseActivity
-import com.example.seeamo.utilize.extensions.applyMarginWindowInsets
-import com.example.seeamo.utilize.extensions.defaultAppearance
-import com.example.seeamo.utilize.extensions.toDp
+import com.example.seeamo.utilize.extensions.*
 import com.example.seeamo.utilize.helper.LayoutHelper
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.shape.MaterialShapeDrawable
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,18 +38,77 @@ class MainActivity : BaseActivity() {
     private lateinit var navHostFragment: NavHostFragment
     private lateinit var navController: NavController
 
-    private lateinit var mainLayout: ConstraintLayout
+    private lateinit var mainLayout: CoordinatorLayout
+    private lateinit var appBarLayout: AppBarLayout
+    private lateinit var toolbar: MaterialToolbar
+
+    private lateinit var appBarConstraintLayout: ConstraintLayout
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var fragmentContainerView: FragmentContainerView
 
     override fun createViews(savedInstanceState: Bundle?) {
-        root = ConstraintLayout(this)
-        mainLayout = (root as ConstraintLayout).apply {
-            defaultAppearance()
+        root = CoordinatorLayout(this)
+
+        mainLayout = (root as CoordinatorLayout).apply {
+            defaultAppearance(baseColor, false)
         }
+
+        appBarLayout = AppBarLayout(this).apply {
+            fitsSystemWindows = true
+            statusBarForeground = MaterialShapeDrawable.createWithElevationOverlay(
+                context
+            )
+            mainLayout.addView(
+                this,
+                LayoutHelper.MATCH_PARENT,
+                LayoutHelper.WRAP_CONTENT
+            )
+        }
+
+        toolbar = MaterialToolbar(this).apply {
+            id = R.id.main_toolbar
+
+            setTitleTextAppearance(
+                this@MainActivity,
+                toThemeResourceId(com.google.android.material.R.attr.textAppearanceHeadline6)
+            )
+
+            menu.add(Menu.NONE, R.id.main_toolbar_search, 0, R.string.main_toolbar_search).apply {
+                setIcon(R.drawable.ic_round_search_24)
+                setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    contentDescription = resources.getString(R.string.main_toolbar_search)
+            }
+
+            minimumHeight = 54.toDp(this@MainActivity)
+            appBarLayout.addView(
+                this,
+                layoutHelper.createAppBarLayout(
+                    LayoutHelper.MATCH_PARENT,
+                    LayoutHelper.WRAP_CONTENT,
+                    scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                            AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
+                            AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+                )
+            )
+        }
+
+        appBarConstraintLayout = ConstraintLayout(this).apply {
+            setBackgroundColor(baseColor.transparent)
+            mainLayout.addView(
+                this,
+                layoutHelper.createCoordinator(
+                    LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT,
+                    behavior = AppBarLayout.ScrollingViewBehavior()
+                )
+            )
+            applyMarginWindowInsets(applyBottom = true)
+        }
+
         fragmentContainerView = FragmentContainerView(this).apply {
             id = R.id.main_nav
         }
+
         bottomNavigationView = BottomNavigationView(this).apply {
             id = R.id.main_bottom_navigation
 
@@ -61,27 +124,27 @@ class MainActivity : BaseActivity() {
             itemPaddingTop = 8.toDp(this@MainActivity)
             itemPaddingBottom = 8.toDp(this@MainActivity)
             elevation = 0f
-        }
-        mainLayout.apply {
-            addView(
-                fragmentContainerView,
-                layoutHelper.createConstraints(
-                    LayoutHelper.MATCH_PARENT,
-                    0,
-                    topToTop = 0,
-                    bottomToTop = bottomNavigationView.id
-                )
-            )
-            addView(
-                bottomNavigationView,
-                layoutHelper.createConstraints(
+
+            mainLayout.addView(
+                this,
+                layoutHelper.createCoordinator(
                     LayoutHelper.MATCH_PARENT,
                     25.toDp(this@MainActivity),
-                    bottomToBottom = 0
+                    gravity = Gravity.BOTTOM
                 )
             )
+            applyMarginWindowInsets(applyBottom = true)
         }
-        bottomNavigationView.applyMarginWindowInsets(applyBottom = true)
+
+        appBarConstraintLayout.addView(
+            fragmentContainerView,
+            layoutHelper.createConstraints(
+                LayoutHelper.MATCH_PARENT,
+                LayoutHelper.MATCH_PARENT,
+                bottomMargin = 68.toDp(this@MainActivity)
+            )
+        )
+
     }
 
     override fun setup(savedInstanceState: Bundle?) {
@@ -126,6 +189,7 @@ class MainActivity : BaseActivity() {
         }
 
         setupBottomNav()
+        setupNavControllerDestinationListener()
     }
 
     private fun setupBottomNav() {
@@ -146,7 +210,6 @@ class MainActivity : BaseActivity() {
             R.drawable.animated_menu
         )
 
-
         menuIds.forEachIndexed { index, id ->
             bottomNavigationView.menu.add(Menu.NONE, id, index, menuTitles[index])
                 .setIcon(menuIcons[index])
@@ -158,5 +221,31 @@ class MainActivity : BaseActivity() {
             selectedItemId = menu[0].itemId
         }
     }
+
+    private fun setupNavControllerDestinationListener() =
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.route) {
+                NavRoutes.Main.TREND_FRAGMENT -> {
+                    toolbar.title = resources.getString(R.string.app_name)
+                    appBarLayout.setExpanded(true, true)
+                }
+                NavRoutes.Main.MOVIE_FRAGMENT -> {
+                    toolbar.title = resources.getString(R.string.movie)
+                    appBarLayout.setExpanded(true, true)
+                }
+                NavRoutes.Main.SERIES_FRAGMENT -> {
+                    toolbar.title = resources.getString(R.string.series)
+                    appBarLayout.setExpanded(true, true)
+                }
+                NavRoutes.Main.NEWS_FRAGMENT -> {
+                    toolbar.title = resources.getString(R.string.news)
+                    appBarLayout.setExpanded(true, true)
+                }
+                NavRoutes.Main.MENU_FRAGMENT -> {
+                    toolbar.title = resources.getString(R.string.menu)
+                    appBarLayout.setExpanded(true, true)
+                }
+            }
+        }
 
 }

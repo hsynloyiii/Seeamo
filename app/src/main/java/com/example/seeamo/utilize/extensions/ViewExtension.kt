@@ -70,10 +70,10 @@ fun View.applyPaddingWindowInsets(
         val bottom = if (applyBottom) insets.bottom else 0
 
         view.updatePadding(
-            initialPadding.left + left,
-            initialPadding.top + top,
-            initialPadding.right + right,
-            initialPadding.bottom + bottom
+            left,
+            top,
+            right,
+             bottom
         )
     }
 }

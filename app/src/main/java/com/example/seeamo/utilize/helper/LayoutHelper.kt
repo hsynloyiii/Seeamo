@@ -1,14 +1,22 @@
 package com.example.seeamo.utilize.helper
 
 import android.content.Context
+import android.view.Gravity
 import android.view.View
+import android.view.animation.Interpolator
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.annotation.GravityInt
 import androidx.annotation.IntDef
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.updateLayoutParams
 import com.example.seeamo.utilize.extensions.toDp
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.AppBarLayout.Behavior
+import com.google.android.material.appbar.AppBarLayout.ChildScrollEffect
+import com.google.android.material.appbar.AppBarLayout.LayoutParams.ScrollFlags
 
 class LayoutHelper(private val context: Context?) {
 
@@ -132,6 +140,61 @@ class LayoutHelper(private val context: Context?) {
         }
     }
 
+    // CoordinatorLayout
+    fun createCoordinator(
+        width: Int,
+        height: Int,
+        behavior: AppBarLayout.ScrollingViewBehavior? = null,
+        @GravityInt gravity: Int = Gravity.NO_GRAVITY,
+        @GravityInt anchorGravity: Int = Gravity.NO_GRAVITY,
+        anchorId: Int = View.NO_ID,
+        @GravityInt insetEdge: Int = Gravity.NO_GRAVITY,
+        @GravityInt dodgeInsetEdges: Int = Gravity.NO_GRAVITY,
+        endMargin: Int = 0,
+        topMargin: Int = 0,
+        startMargin: Int = 0,
+        bottomMargin: Int = 0,
+    ): CoordinatorLayout.LayoutParams =
+        CoordinatorLayout.LayoutParams(getSize(width), getSize(height)).apply {
+            this.gravity = gravity
+            this.anchorGravity = anchorGravity
+            this.anchorId = anchorId
+            this.insetEdge = insetEdge
+            this.dodgeInsetEdges = dodgeInsetEdges
+            this.behavior = behavior
+
+            this.marginEnd = endMargin
+            this.topMargin = topMargin
+            this.marginStart = startMargin
+            this.bottomMargin = bottomMargin
+        }
+
+    // AppBarLayout
+    fun createAppBarLayout(
+        width: Int,
+        height: Int,
+        @ScrollFlags scrollFlags: Int,
+        scrollEffect: ChildScrollEffect? = null,
+        scrollInterpolator: Interpolator? = null,
+        @GravityInt gravity: Int = Gravity.NO_GRAVITY,
+        endMargin: Int = 0,
+        topMargin: Int = 0,
+        startMargin: Int = 0,
+        bottomMargin: Int = 0,
+    ): AppBarLayout.LayoutParams =
+        AppBarLayout.LayoutParams(getSize(width), getSize(height)).apply {
+            this.gravity = gravity
+            this.scrollFlags = scrollFlags
+            this.scrollEffect = scrollEffect
+            this.scrollInterpolator = scrollInterpolator
+
+            this.marginEnd = endMargin
+            this.topMargin = topMargin
+            this.marginStart = startMargin
+            this.bottomMargin = bottomMargin
+        }
+
+    // FrameLayout
     fun createFrame(
         width: Int,
         height: Int,
@@ -178,7 +241,7 @@ class LayoutHelper(private val context: Context?) {
         }
     }
 
-
+    // LinearLayout
     fun createLinear(
         width: Int,
         height: Int,
