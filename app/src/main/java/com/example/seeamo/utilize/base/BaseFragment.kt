@@ -2,11 +2,14 @@ package com.example.seeamo.utilize.base
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.example.seeamo.utilize.helper.LayoutHelper
 
 abstract class BaseFragment(
@@ -27,14 +30,17 @@ abstract class BaseFragment(
 
     open fun onBackGesture() {}
 
+    open fun onLifecycleCreate(owner: LifecycleOwner) {}
+    open fun onLifecycleStart(owner: LifecycleOwner) {}
+    open fun onLifecycleStop(owner: LifecycleOwner) {}
+    open fun onLifecycleResume(owner: LifecycleOwner) {}
+    open fun onLifecyclePause(owner: LifecycleOwner) {}
+    open fun onLifecycleDestroy(owner: LifecycleOwner) {}
+
     private val onBackPressCallback = object : OnBackPressedCallback(hasBackGestureCallBack) {
         override fun handleOnBackPressed() {
             onBackGesture()
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -52,6 +58,26 @@ abstract class BaseFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, onBackPressCallback)
+        viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                onLifecycleStart(owner)
+            }
+            override fun onStop(owner: LifecycleOwner) {
+                onLifecycleStop(owner)
+            }
+            override fun onResume(owner: LifecycleOwner) {
+                onLifecycleResume(owner)
+            }
+            override fun onPause(owner: LifecycleOwner) {
+                onLifecyclePause(owner)
+            }
+            override fun onDestroy(owner: LifecycleOwner) {
+                onLifecycleDestroy(owner)
+            }
+            override fun onCreate(owner: LifecycleOwner) {
+                onLifecycleCreate(owner)
+            }
+        })
         setup(savedInstanceState)
     }
 

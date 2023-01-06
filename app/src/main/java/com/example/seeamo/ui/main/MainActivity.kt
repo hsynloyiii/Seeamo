@@ -1,5 +1,6 @@
 package com.example.seeamo.ui.main
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
@@ -47,6 +48,7 @@ class MainActivity : BaseActivity() {
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var fragmentContainerView: FragmentContainerView
 
+    @SuppressLint("InflateParams")
     override fun createViews(savedInstanceState: Bundle?) {
         root = CoordinatorLayout(this)
 
@@ -106,9 +108,7 @@ class MainActivity : BaseActivity() {
             applyMarginWindowInsets(applyBottom = true)
         }
 
-        fragmentContainerView = FragmentContainerView(this).apply {
-            id = R.id.main_nav
-        }
+        fragmentContainerView = layoutInflater.inflate(R.layout.activity_container_fragment, null) as FragmentContainerView
 
         bottomNavigationView = BottomNavigationView(this).apply {
             id = R.id.main_bottom_navigation
@@ -153,20 +153,9 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setupNavGraph() {
-        val containerFragment: Fragment =
-            supportFragmentManager.fragmentFactory.instantiate(
-                fragmentContainerView.context.classLoader,
-                NavHostFragment().javaClass.name
-            )
-
-        supportFragmentManager.commitNow(allowStateLoss = true) {
-            setReorderingAllowed(true)
-            add(fragmentContainerView.id, containerFragment)
-            setPrimaryNavigationFragment(containerFragment)
-        }
-
         navHostFragment =
             supportFragmentManager.findFragmentById(fragmentContainerView.id) as NavHostFragment
+
         navController = navHostFragment.navController
 
         navController.graph = navController.createGraph(
@@ -218,7 +207,6 @@ class MainActivity : BaseActivity() {
 
         bottomNavigationView.apply {
             setupWithNavController(navController)
-//
 //            selectedItemId = menu[0].itemId
         }
     }

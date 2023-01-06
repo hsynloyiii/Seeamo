@@ -7,15 +7,13 @@ import android.widget.TextView
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.seeamo.R
 import com.example.seeamo.utilize.base.BaseFragment
-import com.example.seeamo.utilize.extensions.defaultAppearance
-import com.example.seeamo.utilize.extensions.repeatViewLifecycle
-import com.example.seeamo.utilize.extensions.toDp
-import com.example.seeamo.utilize.extensions.withAlpha
+import com.example.seeamo.utilize.extensions.*
 import com.example.seeamo.utilize.helper.LayoutHelper
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +22,10 @@ import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class TrendFragment: BaseFragment(false) {
+    
+    companion object {
+        const val TAG = "TrendFragment" 
+    }
 
     private lateinit var trendRecyclerView: RecyclerView
 
@@ -31,11 +33,6 @@ class TrendFragment: BaseFragment(false) {
     private lateinit var trendAdapter: TrendAdapter
 
     override fun createViews(savedInstanceState: Bundle?) {
-        viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onStart(owner: LifecycleOwner) {
-                Log.i("TrendFragment", "onStart:")
-            }
-        })
         root = RecyclerView(requireContext())
 
         trendRecyclerView = (root as RecyclerView).apply {
@@ -53,8 +50,6 @@ class TrendFragment: BaseFragment(false) {
             }
             addItemDecoration(divider)
         }
-
-
     }
 
     override fun setup(savedInstanceState: Bundle?) {
@@ -68,10 +63,19 @@ class TrendFragment: BaseFragment(false) {
         )
 
         repeatViewLifecycle {
+            Log.i(TAG, "bindTrendData: Called")
             trendViewModel.trendResult.collect {
-                Log.i("TrendFragment", "$it")
                 trendAdapter.submitData(it)
             }
         }
+    }
+
+
+    override fun onLifecycleStart(owner: LifecycleOwner) {
+        Log.i(TAG, "onStart:")
+    }
+
+    override fun onLifecycleCreate(owner: LifecycleOwner) {
+        Log.i(TAG, "onLifecycleCreate: ")
     }
 }

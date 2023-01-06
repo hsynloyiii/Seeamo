@@ -12,6 +12,7 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.example.seeamo.data.model.TrendResult
 import com.example.seeamo.utilize.base.BaseColor
 import com.example.seeamo.utilize.extensions.toDp
@@ -66,8 +67,9 @@ class TrendAdapter(
         fun bind(trendResult: TrendResult) {
             ImageHelper.loadUriTo(
                 imageView,
-                trendResult.full_backdrop_path.toUri(),
-                cornerSize = 8.toDp(context)
+                trendResult.fullBackdropPath.toUri(),
+                cornerSize = 8.toDp(context),
+                transformation = FitCenter()
             )
         }
     }

@@ -11,6 +11,7 @@ import com.example.seeamo.data.model.TrendResult
 import com.example.seeamo.data.repository.TrendRepository
 import com.example.seeamo.data.source.db.MovieDao
 import com.example.seeamo.data.source.db.MovieDatabase
+import com.example.seeamo.ui.trend.TrendFragment
 import com.example.seeamo.utilize.extensions.getByState
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
@@ -25,6 +26,10 @@ class TrendRemoteMediator(
     private val initialPage: Int = 1
 ) : RemoteMediator<Int, TrendResult>() {
 
+    override suspend fun initialize(): InitializeAction {
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
+    }
+
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, TrendResult>
@@ -33,43 +38,54 @@ class TrendRemoteMediator(
             val page = when (loadType) {
                 LoadType.REFRESH -> {
                     val remoteKey = getClosestKey(state)
-                    remoteKey?.next ?: initialPage
+                    remoteKey?.next?.minus(1) ?: initialPage
                 }
-                LoadType.PREPEND -> return MediatorResult.Success(true)
+                LoadType.PREPEND -> {
+                    val remoteKey = getFirstKey(state)
+                    val prevPage = remoteKey?.prev ?: return MediatorResult.Success(
+                        endOfPaginationReached = remoteKey != null
+                    )
+                    prevPage
+                }
                 LoadType.APPEND -> {
                     val remoteKey =
-                        getLastKey(state) ?: throw InvalidObjectException("Mediator hit problem")
-                    remoteKey.next ?: return MediatorResult.Success(true)
+                        getLastKey(state)
+                    val nextPage = remoteKey?.next ?: return MediatorResult.Success(
+                        endOfPaginationReached = remoteKey != null
+                    )
+                    nextPage
                 }
             }
 
+            Log.i(TrendFragment.TAG, "page = $page")
+
             trendRepository.getTrendMovie(page = page).getByState(
                 onSuccess = { trendResponse ->
-                    val endOfPagination = trendResponse.results.size < state.config.pageSize
+                    val endOfPagination = trendResponse.results.isEmpty()
                     Log.i(
-                        "TrendFragment",
-                        "rSize = ${trendResponse.results.size}, pSize = ${state.config.pageSize}"
+                        TrendFragment.TAG,
+                        "isEnd $endOfPagination"
                     )
 
-                    val prev = if (page == 1) null else page - 1
-                    val next = if (endOfPagination) null else {
-                        delay(1000)
-                        page + 1
-                    }
-
-                    // create a list of remote keys
-                    val trendRemoteKey = trendResponse.results.map { tr ->
-                        TrendRemoteKey(
-                            id = tr.original_title,
-                            prev = prev,
-                            next = next
-                        )
-                    }
-
                     movieDatabase.withTransaction {
+                        val prev = if (page == 1) null else page - 1
+                        val next = if (endOfPagination) null else {
+                            delay(3000)
+                            page + 1
+                        }
+
                         if (loadType == LoadType.REFRESH) {
                             movieDao.clearAllTrends()
                             movieDao.deleteAllTrendRemoteKey()
+                        }
+
+                        // create a list of remote keys
+                        val trendRemoteKey = trendResponse.results.map { tr ->
+                            TrendRemoteKey(
+                                id = tr.original_title,
+                                prev = prev,
+                                next = next
+                            )
                         }
 
                         movieDao.insertAllTrendRemoteKeys(trendRemoteKey)
@@ -79,6 +95,7 @@ class TrendRemoteMediator(
                     MediatorResult.Success(endOfPaginationReached = endOfPagination)
                 },
                 onFailure = { e ->
+                    Log.i(TrendFragment.TAG, "${e.message}")
                     MediatorResult.Error(e)
                 }
             )
@@ -100,8 +117,20 @@ class TrendRemoteMediator(
         }
     }
 
+    private suspend fun getFirstKey(state: PagingState<Int, TrendResult>): TrendRemoteKey? {
+        return state.pages.firstOrNull {
+            it.data.isNotEmpty()
+        }?.data?.firstOrNull()?.let { trendResult ->
+            movieDatabase.withTransaction {
+                movieDao.getAllTrendRemoteKey(title = trendResult.original_title)
+            }
+        }
+    }
+
     private suspend fun getLastKey(state: PagingState<Int, TrendResult>): TrendRemoteKey? {
-        return state.lastItemOrNull()?.let { trendResult ->
+        return state.pages.lastOrNull {
+            it.data.isNotEmpty()
+        }?.data?.lastOrNull()?.let { trendResult ->
             movieDatabase.withTransaction {
                 movieDao.getAllTrendRemoteKey(title = trendResult.original_title)
             }
