@@ -108,7 +108,10 @@ class MainActivity : BaseActivity() {
             applyMarginWindowInsets(applyBottom = true)
         }
 
-        fragmentContainerView = layoutInflater.inflate(R.layout.activity_container_fragment, null) as FragmentContainerView
+        fragmentContainerView = layoutInflater.inflate(
+            R.layout.activity_container_fragment,
+            null
+        ) as FragmentContainerView
 
         bottomNavigationView = BottomNavigationView(this).apply {
             id = R.id.main_bottom_navigation
@@ -207,6 +210,16 @@ class MainActivity : BaseActivity() {
 
         bottomNavigationView.apply {
             setupWithNavController(navController)
+
+            setOnItemReselectedListener {
+                when (it.itemId) {
+                    menuIds[0] -> {
+                        (navHostFragment.childFragmentManager.fragments[0] as TrendFragment)
+                            .trendRecyclerView.smoothScrollToPosition(0)
+                        appBarLayout.setExpanded(true, true)
+                    }
+                }
+            }
 //            selectedItemId = menu[0].itemId
         }
     }
