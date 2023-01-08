@@ -52,3 +52,37 @@ data class TrendRemoteKey(
     val prev: Int?,
     val next: Int?
 )
+
+
+// Video(Trailer ...) of each trend movie
+@JsonClass(generateAdapter = true)
+data class TrendTrailerResponse(
+    val id: Int,
+    val results: List<TrendTrailerResult>
+)
+
+@JsonClass(generateAdapter = true)
+data class TrendTrailerResult(
+    val name: String,
+    val key: String,
+    val site: String,
+    val size: Int,
+    val type: String,
+    val official: Boolean,
+    val published_at: String,
+    val id: String
+)
+
+enum class UIState {
+    NONE,
+    LOADING,
+    SUCCEED,
+    FAILED
+}
+
+data class TrendTrailerUIState(
+    val uiState: UIState,
+    val trailerUrl: String = "",
+    val published_at: String = "",
+    val failure_message: String = ""
+)

@@ -6,13 +6,13 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.animation.AnimationUtils
+import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.get
-import androidx.fragment.app.Fragment
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.commitNow
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
@@ -58,9 +58,20 @@ class MainActivity : BaseActivity() {
 
         appBarLayout = AppBarLayout(this).apply {
             fitsSystemWindows = true
+            isLiftOnScroll = false
+
             statusBarForeground = MaterialShapeDrawable.createWithElevationOverlay(
                 context
             )
+            setStatusBarForegroundColor(baseColor.background)
+            setBackgroundColor(baseColor.background)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                outlineAmbientShadowColor = baseColor.onBackground.withAlpha(0.52)
+                outlineSpotShadowColor = baseColor.onBackground.withAlpha(0.52)
+            }
+
+            minimumHeight = 36.toDp(this@MainActivity)
             mainLayout.addView(
                 this,
                 LayoutHelper.MATCH_PARENT,
@@ -76,19 +87,30 @@ class MainActivity : BaseActivity() {
                 toThemeResourceId(com.google.android.material.R.attr.textAppearanceHeadline6)
             )
 
+
             menu.add(Menu.NONE, R.id.main_toolbar_search, 0, R.string.main_toolbar_search).apply {
                 setIcon(R.drawable.ic_round_search_24)
-                setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM or MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
+                actionView = SearchView(this@MainActivity).apply {
+                    maxWidth = Int.MAX_VALUE
+
+                    setOnSearchClickListener {
+                        startAnimation(
+                            AnimationUtils.loadAnimation(this@MainActivity, R.anim.fade_in).apply {
+                                setAnimationListener(null)
+                            })
+                    }
+                }
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                     contentDescription = resources.getString(R.string.main_toolbar_search)
             }
 
-            minimumHeight = 54.toDp(this@MainActivity)
             appBarLayout.addView(
                 this,
                 layoutHelper.createAppBarLayout(
                     LayoutHelper.MATCH_PARENT,
-                    LayoutHelper.WRAP_CONTENT,
+                    22.toDp(context),
                     scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
                             AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
                             AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
@@ -220,7 +242,6 @@ class MainActivity : BaseActivity() {
                     }
                 }
             }
-//            selectedItemId = menu[0].itemId
         }
     }
 
@@ -228,26 +249,67 @@ class MainActivity : BaseActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.route) {
                 NavRoutes.Main.TREND_FRAGMENT -> {
-                    toolbar.title = resources.getString(R.string.app_name)
-                    appBarLayout.setExpanded(true, true)
+                    setupToolbarWithNavController(
+                        title = resources.getString(R.string.app_name),
+                        searchQueryHint = "Search all movie/series ..."
+                    ) {}
                 }
                 NavRoutes.Main.MOVIE_FRAGMENT -> {
-                    toolbar.title = resources.getString(R.string.movie)
-                    appBarLayout.setExpanded(true, true)
+                    setupToolbarWithNavController(
+                        title = resources.getString(R.string.movie),
+                        searchQueryHint = "Search all movie/series ..."
+                    ) {}
                 }
                 NavRoutes.Main.SERIES_FRAGMENT -> {
-                    toolbar.title = resources.getString(R.string.series)
-                    appBarLayout.setExpanded(true, true)
+                    setupToolbarWithNavController(
+                        title = resources.getString(R.string.series),
+                        searchQueryHint = "Search all movie/series ..."
+                    ) {}
                 }
                 NavRoutes.Main.NEWS_FRAGMENT -> {
-                    toolbar.title = resources.getString(R.string.news)
-                    appBarLayout.setExpanded(true, true)
+                    setupToolbarWithNavController(
+                        title = resources.getString(R.string.news),
+                        searchQueryHint = "Search any news/journal ..."
+                    ) {}
                 }
                 NavRoutes.Main.MENU_FRAGMENT -> {
-                    toolbar.title = resources.getString(R.string.menu)
-                    appBarLayout.setExpanded(true, true)
+                    setupToolbarWithNavController(
+                        title = resources.getString(R.string.menu),
+                        isSearchMenuVisible = false
+                    ) {}
                 }
             }
         }
+
+    private fun setupToolbarWithNavController(
+        title: String,
+        appBarExpand: Boolean = true,
+        appBarExpandWithAnimation: Boolean = true,
+        isSearchMenuVisible: Boolean = true,
+        searchQueryHint: String = "",
+        onQueryTextChanged: ((String) -> Unit)? = null
+    ) {
+        toolbar.title = title
+        appBarLayout.setExpanded(appBarExpand, appBarExpandWithAnimation)
+
+        val menuItem = toolbar.menu[0]
+        menuItem.isVisible = isSearchMenuVisible
+        menuItem.collapseActionView()
+
+        (menuItem.actionView as SearchView).apply {
+            this.queryHint = searchQueryHint
+
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean = false
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    if (newText != null && onQueryTextChanged != null) {
+                        onQueryTextChanged(newText)
+                    }
+                    return true
+                }
+            })
+        }
+    }
 
 }

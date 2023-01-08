@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Base.Widget.SearchView" parent="Widget.AppCompat.SearchView">
+        <item name="queryBackground">?attr/colorSurface</item>
+        <item name="submitBackground">?attr/colorSurface</item>
+        <item name="searchHintIcon">@null</item>
+    </style>
+
+</resources>

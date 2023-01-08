@@ -70,7 +70,7 @@ class TrendRemoteMediator(
                     movieDatabase.withTransaction {
                         val prev = if (page == 1) null else page - 1
                         val next = if (endOfPagination) null else {
-                            delay(3000)
+                            delay(1500)
                             page + 1
                         }
 
@@ -89,7 +89,9 @@ class TrendRemoteMediator(
                         }
 
                         movieDao.insertAllTrendRemoteKeys(trendRemoteKey)
-                        movieDao.insertAllTrend(trendResponse.results)
+                        movieDao.insertAllTrend(trendResponse.results.filter {
+                            it.poster_path != null
+                        })
                     }
 
                     MediatorResult.Success(endOfPaginationReached = endOfPagination)

@@ -18,6 +18,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.example.seeamo.R
+import com.example.seeamo.data.model.TrendRemoteKey
 import com.example.seeamo.data.model.TrendResult
 import com.example.seeamo.utilize.base.BaseColor
 import com.example.seeamo.utilize.extensions.toDp
@@ -27,13 +28,18 @@ import com.example.seeamo.utilize.helper.LayoutHelper
 
 class TrendAdapter(
     private val baseColor: BaseColor,
-    private val layoutHelper: LayoutHelper
+    private val layoutHelper: LayoutHelper,
+    private val onItemClicked: (TrendResult) -> Unit
 ) :
     PagingDataAdapter<TrendResult, TrendAdapter.ViewHolder>(diffCallback = TrendResult.DIFF_CALLBACK) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        getItem(position)?.let { trendResult ->
-            holder.bind(trendResult)
+        val trendResult = getItem(position) ?: return
+
+        holder.bind(trendResult)
+
+        holder.itemView.setOnClickListener {
+            onItemClicked(trendResult)
         }
     }
 

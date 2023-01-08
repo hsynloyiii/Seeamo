@@ -47,5 +47,6 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
 
         <!-- Theme style. -->
+        <item name="searchViewStyle">@style/Base.Widget.SearchView</item>
     </style>
 </resources>

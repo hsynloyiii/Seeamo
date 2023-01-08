@@ -5,27 +5,22 @@ import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
-import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.seeamo.R
-import com.example.seeamo.ui.main.MainActivity
+import com.example.seeamo.data.model.UIState
 import com.example.seeamo.utilize.base.BaseFragment
 import com.example.seeamo.utilize.extensions.*
 import com.example.seeamo.utilize.helper.LayoutHelper
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class TrendFragment : BaseFragment(false) {
@@ -121,7 +116,26 @@ class TrendFragment : BaseFragment(false) {
     }
 
     private fun bindTrendData() {
-        trendAdapter = TrendAdapter(baseColor, layoutHelper)
+        trendAdapter = TrendAdapter(baseColor, layoutHelper) {
+            Log.i(TAG, "bindTrendData: ${it.id}")
+            launchScope {
+                trendViewModel.getTrendTrailer(requireContext(), it.id).collect { trendTrailerUIState ->
+                    when(trendTrailerUIState.uiState) {
+                        UIState.LOADING -> {
+                            context?.toast("Loading ...")
+                        }
+                        UIState.SUCCEED -> {
+                            context?.toast(trendTrailerUIState.trailerUrl)
+                            Log.i(TAG, "bindTrendData: ${trendTrailerUIState.trailerUrl}")
+                        }
+                        UIState.FAILED -> {
+                            context?.toast(trendTrailerUIState.failure_message)
+                        }
+                        else -> return@collect
+                    }
+                }
+            }
+        }
         trendRecyclerView.adapter = trendAdapter.withLoadStateFooter(
             TrendAdapter.TrendLoadStateAdapter(baseColor, layoutHelper) { trendAdapter.retry() }
         )
