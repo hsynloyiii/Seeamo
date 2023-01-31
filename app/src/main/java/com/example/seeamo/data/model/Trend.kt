@@ -3,6 +3,7 @@ package com.example.seeamo.data.model
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -20,10 +21,11 @@ data class TrendResult(
     val id: Int,
     @PrimaryKey(autoGenerate = false)
     val original_title: String,
-    val poster_path: String?
+    val poster_path: String?,
+    val backdrop_path: String?
 ) {
-    var fullBackdropPath: String = if (poster_path != null)
-        "https://image.tmdb.org/t/p/w500$poster_path"
+    var fullBackdropPath: String = if (backdrop_path != null)
+        "https://image.tmdb.org/t/p/w500$backdrop_path"
     else
         "https://static.vecteezy.com/system/resources/previews/004/141/669/original/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg"
 
@@ -34,7 +36,6 @@ data class TrendResult(
 
             override fun areContentsTheSame(oldItem: TrendResult, newItem: TrendResult): Boolean =
                 oldItem == newItem
-
         }
     }
 }

@@ -1,12 +1,17 @@
 package com.example.seeamo.utilize.extensions
 
 import android.animation.*
+import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Point
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.hardware.display.DisplayManager
+import android.os.Build
 import android.view.*
 import android.widget.*
 import androidx.core.content.ContextCompat
+import androidx.core.hardware.display.DisplayManagerCompat
 import androidx.core.view.*
 import androidx.core.widget.doOnTextChanged
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
@@ -369,6 +374,7 @@ fun MaterialButton.showProgress(
                 setStyle(CircularProgressDrawable.DEFAULT)
                 setColorSchemeColors(progressColor)
                 iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+                strokeWidth = 2.toDp(context).toFloat()
                 start()
             }
             iconPadding = 0
@@ -425,6 +431,21 @@ fun MaterialButtonToggleGroup.set(
                 isChecked
             )
         }
+}
+
+
+fun View.screenSize(): Point {
+    val point = Point()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val metrics = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).currentWindowMetrics
+        point.set(metrics.bounds.width(), metrics.bounds.height())
+        return point
+    } else {
+        val display = (context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).displays[0]
+        @Suppress("DEPRECATION")
+        display.getSize(point)
+        return point
+    }
 }
 
 

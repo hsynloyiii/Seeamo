@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.get
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
@@ -51,6 +52,7 @@ class MainActivity : BaseActivity() {
     @SuppressLint("InflateParams")
     override fun createViews(savedInstanceState: Bundle?) {
         root = CoordinatorLayout(this)
+
 
         mainLayout = (root as CoordinatorLayout).apply {
             defaultAppearance(baseColor, false)
@@ -138,7 +140,7 @@ class MainActivity : BaseActivity() {
         bottomNavigationView = BottomNavigationView(this).apply {
             id = R.id.main_bottom_navigation
 
-            labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_LABELED
+            labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_UNLABELED
             isItemActiveIndicatorEnabled = false
             setBackgroundColor(baseColor.background)
             itemRippleColor = baseColor.baseRippleColorStateList(baseColor.primary)
@@ -147,15 +149,19 @@ class MainActivity : BaseActivity() {
                 unCheckedColor = baseColor.onBackground
             )
             itemIconTintList = null
-            itemPaddingTop = 8.toDp(this@MainActivity)
-            itemPaddingBottom = 8.toDp(this@MainActivity)
+//            itemPaddingTop = 8.toDp(this@MainActivity)
+//            itemPaddingBottom = 8.toDp(this@MainActivity)
             elevation = 0f
+            setPadding(0)
+
+            itemIconSize = 26.toDp(context)
+
 
             mainLayout.addView(
                 this,
                 layoutHelper.createCoordinator(
                     LayoutHelper.MATCH_PARENT,
-                    25.toDp(this@MainActivity),
+                    22.toDp(this@MainActivity),
                     gravity = Gravity.BOTTOM
                 )
             )
@@ -237,7 +243,7 @@ class MainActivity : BaseActivity() {
                 when (it.itemId) {
                     menuIds[0] -> {
                         (navHostFragment.childFragmentManager.fragments[0] as TrendFragment)
-                            .trendRecyclerView.smoothScrollToPosition(0)
+                            .trendRecyclerView.scrollToPosition(0)
                         appBarLayout.setExpanded(true, true)
                     }
                 }

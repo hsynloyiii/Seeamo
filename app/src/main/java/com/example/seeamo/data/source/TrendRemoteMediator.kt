@@ -57,15 +57,9 @@ class TrendRemoteMediator(
                 }
             }
 
-            Log.i(TrendFragment.TAG, "page = $page")
-
             trendRepository.getTrendMovie(page = page).getByState(
                 onSuccess = { trendResponse ->
                     val endOfPagination = trendResponse.results.isEmpty()
-                    Log.i(
-                        TrendFragment.TAG,
-                        "isEnd $endOfPagination"
-                    )
 
                     movieDatabase.withTransaction {
                         val prev = if (page == 1) null else page - 1

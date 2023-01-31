@@ -16,5 +16,7 @@
     <item name="trend_fragment_recycler_view" type="id" />
     <item name="trend_fragment_swipe_refresh_layout" type="id" />
     <item name="trend_fragment_error_text_view" type="id" />
+    <item name="trend_fragment_recycler_view_poster" type="id" />
+    <item name="trend_fragment_recycler_view_title" type="id" />
 
 </resources>

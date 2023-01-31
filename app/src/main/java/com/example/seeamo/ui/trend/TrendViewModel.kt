@@ -59,7 +59,6 @@ class TrendViewModel @Inject constructor(
                 val trailerResult = response.results.firstOrNull { it.type == "Trailer" }
                 if (trailerResult != null) {
                     val youtubeUrl = "https://www.youtube.com/watch?v=${trailerResult.key}"
-                    Log.i(TrendFragment.TAG, "getTrendTrailer: $youtubeUrl")
                     val trailerUrl = extractVideoUrlFromYoutube(context, youtubeUrl)
                     emit(
                         uiState.copy(
