@@ -21,17 +21,18 @@
             android:fillColor="#000000"
             android:strokeWidth="1"/>
     </group>
+    <!-- c28fef -->
     <path
         android:name="path_3"
         android:pathData="M 59.1 57.1 C 53.9 63.7 11.6 63.5 5.4 57.1 C 0.8 52.4 0.8 24.6 5.4 19.9 C 11.6 13.5 53.9 13.3 59.1 19.9 C 63 24.9 63 52.2 59.1 57.1"
-        android:fillColor="#c28fef"
-        android:strokeColor="#c28fef"
+        android:fillColor="?attr/colorOnBackground"
+        android:strokeColor="?attr/colorOnBackground"
         android:strokeWidth="1"/>
     <group android:name="group_1">
         <path
             android:name="path_4"
             android:pathData="M 49.5 52.7 C 45.6 57.7 13.9 57.6 9.2 52.7 C 5.8 49.1 5.8 28 9.2 24.5 C 13.9 19.6 45.6 19.5 49.5 24.5 C 52.4 28.2 52.4 49 49.5 52.7 M 56.4 26.4 C 55.658 26.4 54.945 26.695 54.42 27.22 C 53.895 27.745 53.6 28.458 53.6 29.2 C 53.6 29.942 53.895 30.655 54.42 31.18 C 54.945 31.705 55.658 32 56.4 32 C 57.142 32 57.855 31.705 58.38 31.18 C 58.905 30.655 59.2 29.942 59.2 29.2 C 59.2 28.458 58.905 27.745 58.38 27.22 C 57.855 26.695 57.142 26.4 56.4 26.4 Z M 56.4 34.8 C 55.658 34.8 54.945 35.095 54.42 35.62 C 53.895 36.145 53.6 36.858 53.6 37.6 C 53.6 38.342 53.895 39.055 54.42 39.58 C 54.945 40.105 55.658 40.4 56.4 40.4 C 57.142 40.4 57.855 40.105 58.38 39.58 C 58.905 39.055 59.2 38.342 59.2 37.6 C 59.2 36.858 58.905 36.145 58.38 35.62 C 57.855 35.095 57.142 34.8 56.4 34.8 Z"
-            android:fillColor="#000000"
+            android:fillColor="?attr/backgroundColor"
             android:strokeWidth="1"/>
     </group>
 </vector>

@@ -1,10 +1,11 @@
 package com.example.seeamo.ui.trend
 
+import android.graphics.Outline
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -24,22 +25,22 @@ import com.example.seeamo.utilize.extensions.*
 import com.example.seeamo.utilize.helper.DrawableHelper
 import com.example.seeamo.utilize.helper.ImageHelper
 import com.example.seeamo.utilize.helper.LayoutHelper
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
 
 interface PlayerHolderEventListener {
-    fun onPlay(
+    fun onPlayVideo(
+        itemView: View,
         playerView: StyledPlayerView,
         thumbnailLayout: ConstraintLayout,
         uiState: TrendTrailerUIState
     )
 
-    fun onPause()
+//    fun onPauseVideo(itemView: View)
+
+    fun onBindViewHolderToWindow(holder: TrendViewHolder, position: Int)
 }
 
 class TrendViewHolder(
@@ -52,7 +53,7 @@ class TrendViewHolder(
     private val context = parent.context
 
     private val mainLayout: FrameLayout = parent as FrameLayout
-    private val thumbnailLayout: ConstraintLayout = ConstraintLayout(context).apply {
+    val thumbnailLayout: ConstraintLayout = ConstraintLayout(context).apply {
         mainLayout.addView(
             this,
             LayoutHelper.MATCH_PARENT,
@@ -72,6 +73,7 @@ class TrendViewHolder(
             )
         }
     }
+
     private val titleTextView: TextView by lazy {
         TextView(context).apply {
             id = R.id.trend_fragment_recycler_view_title
@@ -83,6 +85,7 @@ class TrendViewHolder(
                 baseColor.onBackground.withAlpha(0.32),
                 0
             )
+            outlineProvider
             setPadding(8.toDp(context))
             gravity = Gravity.START
             thumbnailLayout.addView(
@@ -136,10 +139,17 @@ class TrendViewHolder(
         }
     }
 
-    private val playerView: StyledPlayerView by lazy {
+    val playerView: StyledPlayerView by lazy {
         StyledPlayerView(context).apply {
             visibility = View.GONE
             resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+
+            outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, 8.toDp(context).toFloat())
+                }
+            }
+            clipToOutline = true
 
             mainLayout.addView(
                 this,
@@ -159,7 +169,8 @@ class TrendViewHolder(
         titleTextView.text = trendResult.original_title
 
         mainLayout.setOnClickListener {
-            Log.i(TrendFragment.TAG, "main = $mainLayout || ${trendResult.id}")
+            Log.i(TrendFragment.TAG, "$itemView")
+//            playerHolderEventListener.onPauseVideo(itemView)
         }
 
         playPauseOnClick(trendResult)
@@ -180,7 +191,6 @@ class TrendViewHolder(
                         when (trendTrailerUIState.uiState) {
                             UIState.LOADING -> {}
                             UIState.SUCCEED -> {
-                                context?.toast(trendTrailerUIState.trailerUrl)
                                 playTrailer(trendTrailerUIState)
                             }
                             UIState.FAILED -> {
@@ -195,6 +205,6 @@ class TrendViewHolder(
 
     //    private val mediaItems = mutableListOf<MediaItem>()
     private fun playTrailer(uiState: TrendTrailerUIState) {
-        playerHolderEventListener.onPlay(playerView, thumbnailLayout, uiState)
+        playerHolderEventListener.onPlayVideo(itemView, playerView, thumbnailLayout, uiState)
     }
 }

@@ -51,6 +51,8 @@ class TrendAdapter(
     override fun onBindViewHolder(holder: TrendViewHolder, position: Int) {
         val trendResult = getItem(position) ?: return
 
+        playerHolderEventListener.onBindViewHolderToWindow(holder, position)
+
         holder.bind(trendResult)
     }
 

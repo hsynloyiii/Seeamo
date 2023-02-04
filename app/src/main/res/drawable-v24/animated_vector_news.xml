@@ -24,16 +24,16 @@
                     android:propertyName="fillColor"
                     android:duration="350"
                     android:valueFrom="?attr/backgroundColor"
-                    android:valueTo="#ff5449"
+                    android:valueTo="?attr/colorOnBackground"
                     android:valueType="colorType"
                     android:interpolator="@android:interpolator/fast_out_slow_in"/>
-                <objectAnimator
-                    android:propertyName="strokeColor"
-                    android:duration="350"
-                    android:valueFrom="?attr/colorOnBackground"
-                    android:valueTo="#ff5449"
-                    android:valueType="colorType"
-                    android:interpolator="@android:interpolator/fast_out_slow_in"/>
+<!--                <objectAnimator-->
+<!--                    android:propertyName="strokeColor"-->
+<!--                    android:duration="350"-->
+<!--                    android:valueFrom="?attr/colorOnBackground"-->
+<!--                    android:valueTo="#ff5449"-->
+<!--                    android:valueType="colorType"-->
+<!--                    android:interpolator="@android:interpolator/fast_out_slow_in"/>-->
             </set>
         </aapt:attr>
     </target>

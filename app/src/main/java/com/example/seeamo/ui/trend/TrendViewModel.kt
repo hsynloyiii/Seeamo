@@ -43,7 +43,7 @@ class TrendViewModel @Inject constructor(
 ) : ViewModel() {
 
     val trendResult = Pager(
-        config = PagingConfig(10),
+        config = PagingConfig(20, enablePlaceholders = false),
         remoteMediator = TrendRemoteMediator(movieDatabase, movieDao, trendRepository)
     ) {
         movieDao.trends()

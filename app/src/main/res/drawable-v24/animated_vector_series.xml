@@ -47,13 +47,26 @@
                     android:propertyName="fillColor"
                     android:duration="350"
                     android:valueFrom="?attr/backgroundColor"
-                    android:valueTo="#c28fef"
+                    android:valueTo="?attr/colorOnBackground"
                     android:interpolator="@android:interpolator/fast_out_slow_in"/>
+<!--                <objectAnimator-->
+<!--                    android:propertyName="strokeColor"-->
+<!--                    android:duration="350"-->
+<!--                    android:valueFrom="?attr/colorOnBackground"-->
+<!--                    android:valueTo="#c28fef"-->
+<!--                    android:interpolator="@android:interpolator/fast_out_slow_in"/>-->
+            </set>
+        </aapt:attr>
+    </target>
+
+    <target android:name="path_4">
+        <aapt:attr name="android:animation">
+            <set>
                 <objectAnimator
-                    android:propertyName="strokeColor"
+                    android:propertyName="fillColor"
                     android:duration="350"
                     android:valueFrom="?attr/colorOnBackground"
-                    android:valueTo="#c28fef"
+                    android:valueTo="?attr/backgroundColor"
                     android:interpolator="@android:interpolator/fast_out_slow_in"/>
             </set>
         </aapt:attr>
