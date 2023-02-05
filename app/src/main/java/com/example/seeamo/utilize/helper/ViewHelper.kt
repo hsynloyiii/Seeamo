@@ -76,6 +76,11 @@ class ViewHelper {
 //            typeface = font
 //                ?: ResourcesCompat.getFont(mtButton.context, R.font.iran_yekan_bold)
         }
+
+        companion object {
+            const val ICON_BUTTON_WIDTH = 48
+            const val ICON_BUTTON_HEIGHT = 48
+        }
     }
 
     class Text {

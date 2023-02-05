@@ -243,9 +243,9 @@ class MainActivity : BaseActivity() {
             setOnItemReselectedListener {
                 when (it.itemId) {
                     menuIds[0] -> {
-//                        (navHostFragment.childFragmentManager.fragments[0] as TrendFragment)
-//                            .trendRecyclerView.smoothScrollToPosition(0)
-//                        appBarLayout.setExpanded(true, true)
+                        (navHostFragment.childFragmentManager.fragments[0] as TrendFragment)
+                            .trendRecyclerView.scrollToPosition(0)
+                        appBarLayout.setExpanded(true, true)
                     }
                 }
             }

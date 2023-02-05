@@ -226,16 +226,13 @@ fun MaterialButton.iconButton(
     icon: Drawable?,
     bcColor: ColorStateList? = null,
     iconTint: ColorStateList? = null,
+    iconSize: Int? = null,
     colorRipple: ColorStateList? = null,
     isCircular: Boolean = false,
     sizeCorner: Float? = null,
     onClick: ((View) -> Unit)? = null
 ) {
     val baseColor = BaseColor(context)
-    updateLayoutParams<ViewGroup.LayoutParams> {
-        width = 48.toDp(context)
-        height = 48.toDp(context)
-    }
     ViewHelper.Button(this).baseAppearance(
         bcColor = bcColor ?: baseColor.checkedColorStateList(baseColor.background),
         isCircular = isCircular,
@@ -250,7 +247,7 @@ fun MaterialButton.iconButton(
     this.icon = icon
     iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
     this.iconTint = iconTint ?: baseColor.baseColorStateList(baseColor.onBackground)
-    iconSize = ViewHelper.BASE_ICON_SIZE.toDp(context)
+    this.iconSize = iconSize ?: ViewHelper.BASE_ICON_SIZE.toDp(context)
     rippleColor = colorRipple
         ?: baseColor.customTransparencyRippleColorStateList(
             baseColor.onSurfaceVariant,

@@ -8,7 +8,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.example.seeamo.utilize.extensions.toDp
 
-class BaseAnimations {
+class BaseAnimation {
 
     @SuppressLint("ObjectAnimatorBinding")
     class Button {
@@ -96,4 +96,12 @@ class BaseAnimations {
         }
     }
 
+    companion object {
+        const val DURATION_SHORT_1 = 75L
+        const val DURATION_SHORT_2 = 150L
+        const val DURATION_MEDIUM_1 = 200L
+        const val DURATION_MEDIUM_2 = 250L
+        const val DURATION_LONG_1 = 300L
+        const val DURATION_LONG_2 = 350L
+    }
 }

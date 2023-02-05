@@ -11,7 +11,7 @@ class MovieFragment : BaseFragment(false) {
     private lateinit var mainLayout: RelativeLayout
     override fun createViews(savedInstanceState: Bundle?) {
         root = RelativeLayout(context).apply {
-            setBackgroundColor(baseColor.gray)
+            setBackgroundColor(baseColor.surfaceVariant)
         }
     }
 

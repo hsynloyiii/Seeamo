@@ -83,9 +83,10 @@ class TrendRemoteMediator(
                         }
 
                         movieDao.insertAllTrendRemoteKeys(trendRemoteKey)
-                        movieDao.insertAllTrend(trendResponse.results.filter {
-                            it.poster_path != null
-                        })
+                        val validatedMovies = trendResponse.results.filter {
+                            it.poster_path != null || it.backdrop_path != null
+                        }
+                        movieDao.insertAllTrend(validatedMovies)
                     }
 
                     MediatorResult.Success(endOfPaginationReached = endOfPagination)
