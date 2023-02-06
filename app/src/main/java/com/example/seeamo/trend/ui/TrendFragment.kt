@@ -4,6 +4,7 @@ import android.animation.LayoutTransition
 import android.content.Context
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -12,8 +13,10 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -31,6 +34,7 @@ import com.example.seeamo.core.utilize.base.BaseFragment
 import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.ExoAudioFocusHelper
 import com.example.seeamo.core.utilize.helper.LayoutHelper
+import com.example.seeamo.data.model.UIState
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -48,8 +52,6 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
 
     companion object {
         const val TAG = "TrendFragment"
-        private const val PREVIOUS_ITEM_LIST_POSITION_STATE_KEY = "item_list_position_state"
-        private const val LAST_ITEM_VIDEO_POSITION_STATE_KEY = "item_video_position_state"
     }
 
     private lateinit var mainLayout: RelativeLayout
@@ -57,7 +59,7 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
     lateinit var trendRecyclerView: RecyclerView
     private lateinit var errorTextView: TextView
 
-    private val trendViewModel by viewModels<TrendViewModel>()
+    private val trendViewModel: TrendViewModel by viewModels()
     private lateinit var trendAdapter: TrendAdapter
     private var savedTrendTrailerUIState: TrendTrailerUIState? = null
 
@@ -70,11 +72,9 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
     private var previousVideoVolume: Float? = null
 
     private var previousItemView: View? = null
-    private var previousItemListPosition: Int? = null
+
     private var previousThumbnailLayout: ConstraintLayout? = null
     private var previousPlayerView: StyledPlayerView? = null
-
-    private var lastItemVideoPosition: Long? = null
 
     private var currentPlayPauseButton: MaterialButton? = null
 
@@ -156,22 +156,10 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (previousItemListPosition != null)
-            outState.putInt(PREVIOUS_ITEM_LIST_POSITION_STATE_KEY, previousItemListPosition!!)
-        if (lastItemVideoPosition != null)
-            outState.putLong(LAST_ITEM_VIDEO_POSITION_STATE_KEY, lastItemVideoPosition!!)
-    }
-
     override fun setup(savedInstanceState: Bundle?) {
-        if (previousItemListPosition == null)
-            previousItemListPosition =
-                savedInstanceState?.getInt(PREVIOUS_ITEM_LIST_POSITION_STATE_KEY)
+        Log.i(TAG, "setup: ")
 
-        lastItemVideoPosition = savedInstanceState?.getLong(LAST_ITEM_VIDEO_POSITION_STATE_KEY)
-
-        repeatViewLifecycle(activeState = Lifecycle.State.CREATED) {
+        repeatViewLifecycle(activeState = Lifecycle.State.STARTED) {
             trendViewModel.getSavedTrendTrailerUIState.collect {
                 savedTrendTrailerUIState = it
             }
@@ -185,7 +173,6 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
             TrendAdapter(
                 baseColor,
                 layoutHelper,
-                trendViewModel,
                 this
             )
 
@@ -220,31 +207,32 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
             }
         }
 
-
         trendRecyclerView.addOnChildAttachStateChangeListener(object :
             RecyclerView.OnChildAttachStateChangeListener {
             override fun onChildViewAttachedToWindow(view: View) {
                 val lm = trendRecyclerView.layoutManager as LinearLayoutManager
                 if (previousItemView != null &&
                     previousItemView == view &&
-                    previousItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()
+                    trendViewModel.lastPlayedItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()
                 ) {
-                    if (previousPlayerView?.isVisible == false) {
-                        previousThumbnailLayout?.visibility = View.GONE
-                        previousPlayerView?.visibility = View.VISIBLE
-                        if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PAUSED)
-                            mediaController.transportControls.play()
+                    previousThumbnailLayout?.visibility = View.GONE
+                    previousPlayerView?.visibility = View.VISIBLE
+                    (previousItemView as FrameLayout).layoutTransition = LayoutTransition()
+                    if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PAUSED) {
+                        mediaController.transportControls.play()
+                        setPlayPauseButtonIcon(true)
                     }
                 }
             }
 
             override fun onChildViewDetachedFromWindow(view: View) {
                 if (previousItemView != null && previousItemView == view) {
-                    if (previousPlayerView?.isVisible == true) {
-                        previousThumbnailLayout?.visibility = View.VISIBLE
-                        previousPlayerView?.visibility = View.GONE
-                        if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PLAYING)
-                            mediaController.transportControls.pause()
+                    (previousItemView as FrameLayout).layoutTransition = null
+                    previousThumbnailLayout?.visibility = View.VISIBLE
+                    previousPlayerView?.visibility = View.GONE
+                    if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
+                        mediaController.transportControls.pause()
+                        setPlayPauseButtonIcon(false)
                     }
                 }
             }
@@ -291,7 +279,6 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
                     }
                 })
             }
-        setupSessionAndController()
     }
 
     private fun setupSessionAndController() {
@@ -307,63 +294,91 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
             setPlayer(exoPlayer)
         }
 
+        while (activity == null)
+            return
+
         mediaController =
             MediaControllerCompat(context, mediaSession.sessionToken).also { mediaController ->
                 MediaControllerCompat.setMediaController(requireActivity(), mediaController)
             }
     }
 
-    override fun onPlayVideo(
+    override fun startPlayerButtonOnClick(
+        trendResultId: Int,
+        button: MaterialButton,
         itemView: View,
         playerView: StyledPlayerView,
-        thumbnailLayout: ConstraintLayout,
-        uiState: TrendTrailerUIState
+        thumbnailLayout: ConstraintLayout
     ) {
-        if (!this::exoPlayer.isInitialized)
-            setupExoPlayer()
+        repeatViewLifecycle {
+            trendViewModel.getTrendTrailer(trendResultId)
+                .collect { trendTrailerUIState ->
+                    button.showProgress(
+                        showProgress = trendTrailerUIState.uiState == UIState.LOADING,
+                        initialIcon = ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.animated_play_to_pause
+                        )
+                    )
+                    when (trendTrailerUIState.uiState) {
+                        UIState.LOADING -> {}
+                        UIState.SUCCEED -> {
+                            trendViewModel.lastPlayedItemListPosition =
+                                trendRecyclerView.getChildAdapterPosition(itemView)
 
-        previousThumbnailLayout?.run {
-            visibility = View.VISIBLE
-        }
-        previousPlayerView?.run {
-            player = null
-            visibility = View.GONE
-        }
-        playerView.visibility = View.VISIBLE
-        thumbnailLayout.visibility = View.GONE
+                            if (!this@TrendFragment::exoPlayer.isInitialized)
+                                setupExoPlayer()
 
-        with(exoPlayer) {
-            clearMediaItems()
-            setMediaItem(MediaItem.fromUri(uiState.trailerUrl))
-            playerView.player = this
-            prepare()
-            playWhenReady = true
-        }
+                            previousThumbnailLayout?.run {
+                                visibility = View.VISIBLE
+                            }
+                            previousPlayerView?.run {
+                                player = null
+                                visibility = View.GONE
+                            }
+                            playerView.visibility = View.VISIBLE
+                            thumbnailLayout.visibility = View.GONE
 
-        previousPlayerView = playerView
-        previousThumbnailLayout = thumbnailLayout
-        previousItemView = itemView
-        previousItemListPosition = trendRecyclerView.getChildAdapterPosition(previousItemView!!)
+                            with(exoPlayer) {
+                                clearMediaItems()
+                                setMediaItem(MediaItem.fromUri(trendTrailerUIState.trailerUrl))
+                                playerView.player = this
+                                prepare()
+                                playWhenReady = true
+                            }
+                            setupSessionAndController()
+
+                            previousPlayerView = playerView
+                            previousThumbnailLayout = thumbnailLayout
+                            previousItemView = itemView
+                            Log.i(TAG, "onPlayVideo: ${trendViewModel.lastPlayedItemListPosition}, $previousItemView")
+                        }
+                        UIState.FAILED -> {
+                            context?.toast(trendTrailerUIState.failure_message)
+                        }
+                        else -> return@collect
+                    }
+                }
+        }
     }
 
     override fun onBindViewHolderToWindow(holder: TrendViewHolder, position: Int) {
-        Log.i(TAG, "${holder.itemView}, $position")
-        if (previousItemListPosition != null && previousItemListPosition == position) {
+        Log.i(TAG, "onBindViewHolderToWindow: ${holder.itemView}")
+        if (trendViewModel.lastPlayedItemListPosition?.equals(position) == true) {
             if (!this::exoPlayer.isInitialized && savedTrendTrailerUIState != null) {
                 setupExoPlayer()
                 with(exoPlayer) {
+                    clearMediaItems()
                     setMediaItem(MediaItem.fromUri(savedTrendTrailerUIState!!.trailerUrl))
+                    seekTo(trendViewModel.lastItemVideoPosition ?: 0)
                     prepare()
                     playWhenReady = true
-                    seekTo(lastItemVideoPosition ?: 0)
                 }
             }
 
             previousItemView = holder.itemView
-            Log.i(TAG, "onBindViewHolderToWindow: $previousItemView")
             previousThumbnailLayout = holder.thumbnailLayout
             previousPlayerView = holder.playerView
-
 
             previousPlayerView!!.player = exoPlayer
             setupSessionAndController()
@@ -372,6 +387,7 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
             previousPlayerView?.visibility = View.VISIBLE
 
             exoPlayer.play()
+            setPlayPauseButtonIcon(true)
         }
     }
 
@@ -418,7 +434,7 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
         currentPlayPauseButton = (view.parent as ConstraintLayout).getChildAt(0) as MaterialButton
         repeatViewLifecycle {
             while (isActive) {
-                if (exoPlayer.currentPosition > 100) {
+                if (exoPlayer.currentPosition > 100 && exoPlayer.isPlaying) {
                     val currentPlayerPosition = exoPlayer.currentPosition
                     val fullDuration = exoPlayer.duration
                     val remainingMillis = fullDuration - currentPlayerPosition
@@ -430,29 +446,48 @@ class TrendFragment : BaseFragment(false), PlayerHolderEventListener {
         }
     }
 
+    private fun setPlayPauseButtonIcon(isPlaying: Boolean) {
+        currentPlayPauseButton?.icon =
+            if (isPlaying)
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.animated_pause_to_play
+                )
+            else
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.animated_play_to_pause
+                )
+    }
+
     override fun onStart() {
         super.onStart()
+        Log.i(TAG, "onStart: ")
         if (this::exoPlayer.isInitialized) {
-            if (this::trendRecyclerView.isInitialized) {
-                val lm = trendRecyclerView.layoutManager as LinearLayoutManager
-                if (previousItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
-                    exoPlayer.play()
-                    currentPlayPauseButton?.icon =
-                        ContextCompat.getDrawable(
-                            requireContext(),
-                            R.drawable.animated_pause_to_play
-                        )
-                }
-            }
             mediaSessionConnector.setPlayer(exoPlayer)
             mediaSession.isActive = true
+            if (this::trendRecyclerView.isInitialized) {
+                val lm = trendRecyclerView.layoutManager as LinearLayoutManager
+                if (trendViewModel.lastPlayedItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
+                    exoPlayer.play()
+                    setPlayPauseButtonIcon(true)
+                }
+            }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(TAG, "onPause: ${trendViewModel.lastPlayedItemListPosition ?: -1}")
+//        trendViewModel.lastPlayedItemListPosition = lastPlayedItemListPosition
+        if (this::exoPlayer.isInitialized)
+            trendViewModel.lastItemVideoPosition = exoPlayer.currentPosition
     }
 
     override fun onStop() {
         super.onStop()
+        Log.i(TAG, "onStop: ")
         if (this::exoPlayer.isInitialized) {
-            lastItemVideoPosition = exoPlayer.currentPosition
             if (exoPlayer.isPlaying || exoPlayer.playbackState == Player.STATE_BUFFERING)
                 exoPlayer.pause()
             mediaSessionConnector.setPlayer(null)

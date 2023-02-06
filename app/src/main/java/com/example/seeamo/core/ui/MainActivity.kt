@@ -3,6 +3,7 @@ package com.example.seeamo.core.ui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
@@ -58,6 +59,7 @@ class MainActivity : BaseActivity() {
         }
 
         appBarLayout = AppBarLayout(this).apply {
+            id = R.id.main_app_bar
             fitsSystemWindows = true
             isLiftOnScroll = false
 
@@ -179,6 +181,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun setup(savedInstanceState: Bundle?) {
+        Log.i(TrendFragment.TAG, "activity setup: ")
         setupNavGraph()
     }
 
@@ -288,14 +291,12 @@ class MainActivity : BaseActivity() {
 
     private fun setupToolbarWithNavController(
         title: String,
-        appBarExpand: Boolean = true,
-        appBarExpandWithAnimation: Boolean = true,
         isSearchMenuVisible: Boolean = true,
         searchQueryHint: String = "",
         onQueryTextChanged: ((String) -> Unit)? = null
     ) {
         toolbar.title = title
-        appBarLayout.setExpanded(appBarExpand, appBarExpandWithAnimation)
+//        appBarLayout.setExpanded(appBarExpand, true)
 
         val menuItem = toolbar.menu[0]
         menuItem.isVisible = isSearchMenuVisible
@@ -317,4 +318,8 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(TrendFragment.TAG, "activity onDestroy: ")
+    }
 }

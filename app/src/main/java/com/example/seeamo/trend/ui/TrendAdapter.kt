@@ -1,5 +1,6 @@
 package com.example.seeamo.trend.ui
 
+import android.animation.LayoutTransition
 import android.content.Context
 import android.util.TypedValue
 import android.view.Gravity
@@ -22,7 +23,6 @@ import com.example.seeamo.core.utilize.helper.LayoutHelper
 class TrendAdapter(
     private val baseColor: BaseColor,
     private val layoutHelper: LayoutHelper,
-    private val trendViewModel: TrendViewModel,
     private val playerHolderEventListener: PlayerHolderEventListener
 ) : PagingDataAdapter<TrendResult, TrendViewHolder>(diffCallback = TrendResult.DIFF_CALLBACK) {
 
@@ -40,16 +40,14 @@ class TrendAdapter(
             layoutParams =
                 layoutHelper.createRecycler(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT)
             setPadding(8.toDp(context), 4.toDp(context), 8.toDp(context), 4.toDp(context))
-//            isClickable = true
-//            isFocusable = true
 //            setBackgroundResource(context.toThemeResourceId(android.R.attr.selectableItemBackground))
+            layoutTransition = LayoutTransition()
         }
 
         return TrendViewHolder(
             constraintLayout,
             layoutHelper,
             baseColor,
-            trendViewModel,
             playerHolderEventListener
         )
     }

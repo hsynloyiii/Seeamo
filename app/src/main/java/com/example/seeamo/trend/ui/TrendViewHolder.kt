@@ -15,13 +15,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.example.seeamo.R
 import com.example.seeamo.data.model.TrendResult
-import com.example.seeamo.data.model.TrendTrailerUIState
-import com.example.seeamo.data.model.UIState
 import com.example.seeamo.core.utilize.base.BaseAnimation
 import com.example.seeamo.core.utilize.base.BaseColor
 import com.example.seeamo.core.utilize.extensions.*
@@ -32,16 +29,14 @@ import com.example.seeamo.core.utilize.helper.ViewHelper
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 interface PlayerHolderEventListener {
-    fun onPlayVideo(
+    fun startPlayerButtonOnClick(
+        trendResultId: Int,
+        button: MaterialButton,
         itemView: View,
         playerView: StyledPlayerView,
-        thumbnailLayout: ConstraintLayout,
-        uiState: TrendTrailerUIState
+        thumbnailLayout: ConstraintLayout
     )
 
     fun onBindViewHolderToWindow(holder: TrendViewHolder, position: Int)
@@ -57,13 +52,13 @@ class TrendViewHolder(
     parent: View,
     layoutHelper: LayoutHelper,
     baseColor: BaseColor,
-    private val trendViewModel: TrendViewModel,
     private val playerHolderEventListener: PlayerHolderEventListener
 ) : RecyclerView.ViewHolder(parent) {
     private val context = parent.context
 
     private val mainLayout: FrameLayout = parent as FrameLayout
     val thumbnailLayout: ConstraintLayout = ConstraintLayout(context).apply {
+        id = R.id.trend_fragment_item_thumbnail_layout
         mainLayout.addView(
             this,
             LayoutHelper.MATCH_PARENT,
@@ -73,9 +68,9 @@ class TrendViewHolder(
         maxHeight = 300.toDp(context)
     }
 
-    private val imageView: ImageView by lazy {
+    private val posterImageView: ImageView by lazy {
         ImageView(context).apply {
-            id = R.id.trend_fragment_recycler_view_poster
+            id = R.id.trend_fragment_item_poster_image_view
             thumbnailLayout.addView(
                 this,
                 LayoutHelper.MATCH_PARENT,
@@ -86,7 +81,7 @@ class TrendViewHolder(
 
     private val titleTextView: TextView by lazy {
         TextView(context).apply {
-            id = R.id.trend_fragment_recycler_view_title
+            id = R.id.trend_fragment_item_title_text_view
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             setTextColor(baseColor.white)
             background = DrawableHelper.Round(
@@ -102,9 +97,9 @@ class TrendViewHolder(
                 this,
                 layoutHelper.createConstraints(
                     0, LayoutHelper.WRAP_CONTENT,
-                    startToStart = imageView.id,
-                    endToEnd = imageView.id,
-                    bottomToBottom = imageView.id
+                    startToStart = posterImageView.id,
+                    endToEnd = posterImageView.id,
+                    bottomToBottom = posterImageView.id
                 )
             )
         }
@@ -112,6 +107,7 @@ class TrendViewHolder(
 
     private val startPlayerButton: MaterialButton by lazy {
         MaterialButton(context).apply {
+            id = R.id.trend_fragment_item_start_player_button
             iconButton(
                 icon = ContextCompat.getDrawable(context, R.drawable.animated_play_to_pause),
                 bcColor = baseColor.baseColorStateList(baseColor.primaryContainer),
@@ -135,6 +131,7 @@ class TrendViewHolder(
 
     val playerView: StyledPlayerView by lazy {
         StyledPlayerView(context).apply {
+            id = R.id.trend_fragment_item_player_view
             visibility = View.GONE
             resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 
@@ -183,6 +180,7 @@ class TrendViewHolder(
 
     private val controlsLayout: ConstraintLayout by lazy {
         ConstraintLayout(context).apply {
+            id = R.id.trend_fragment_item_controls_layout
             alpha = 0f
             visibility = View.GONE
             setBackgroundColor(baseColor.black.withAlpha(0.52))
@@ -266,16 +264,6 @@ class TrendViewHolder(
             playerHolderEventListener.remainingPlayerTimeListener(remainingTimeTextView)
         }
     }
-
-    private fun convertMillisToDate(millis: Long): String {
-        val date = Date(millis)
-//        val calendar = Calendar.getInstance()
-        val formatter = SimpleDateFormat("dd/MM/yyyy hh:mm:ss", Locale.getDefault())
-        formatter.timeZone = TimeZone.getTimeZone("UTC")
-//        calendar.timeInMillis = millis
-        return formatter.format(date)
-    }
-
     private fun hideControlsLayoutAnimation() {
         controlsLayout.animate()
             .alpha(0f)
@@ -287,7 +275,7 @@ class TrendViewHolder(
 
     fun bind(trendResult: TrendResult) {
         ImageHelper.loadUriTo(
-            imageView,
+            posterImageView,
             trendResult.fullBackdropPath.toUri(),
             cornerSize = 8.toDp(context),
             transformation = CenterInside()
@@ -299,37 +287,15 @@ class TrendViewHolder(
             Log.i(TrendFragment.TAG, "$itemView")
         }
 
-        playPauseOnClick(trendResult)
-    }
-
-    private fun playPauseOnClick(trendResult: TrendResult) = with(startPlayerButton) {
-        setOnClickListener {
-            trendViewModel.viewModelScope.launch {
-                trendViewModel.getTrendTrailer(context, trendResult.id)
-                    .collect { trendTrailerUIState ->
-                        showProgress(
-                            showProgress = trendTrailerUIState.uiState == UIState.LOADING,
-                            initialIcon = ContextCompat.getDrawable(
-                                context,
-                                R.drawable.animated_play_to_pause
-                            )
-                        )
-                        when (trendTrailerUIState.uiState) {
-                            UIState.LOADING -> {}
-                            UIState.SUCCEED -> {
-                                playTrailer(trendTrailerUIState)
-                            }
-                            UIState.FAILED -> {
-                                context?.toast(trendTrailerUIState.failure_message)
-                            }
-                            else -> return@collect
-                        }
-                    }
-            }
+        startPlayerButton.setOnClickListener {
+            playerHolderEventListener.startPlayerButtonOnClick(
+                trendResultId = trendResult.id,
+                button = startPlayerButton,
+                itemView = itemView,
+                playerView = playerView,
+                thumbnailLayout = thumbnailLayout
+            )
         }
     }
 
-    private fun playTrailer(uiState: TrendTrailerUIState) {
-        playerHolderEventListener.onPlayVideo(itemView, playerView, thumbnailLayout, uiState)
-    }
 }

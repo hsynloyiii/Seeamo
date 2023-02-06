@@ -2,7 +2,7 @@
 <resources>
 
     <!-- MainActivity -->
-    <item name="main_nav_host_fragment" type="id" />
+    <item name="main_app_bar" type="id" />
     <item name="main_toolbar" type="id" />
     <item name="main_toolbar_search" type="id" />
     <item name="main_bottom_navigation" type="id" />
@@ -16,7 +16,12 @@
     <item name="trend_fragment_recycler_view" type="id" />
     <item name="trend_fragment_swipe_refresh_layout" type="id" />
     <item name="trend_fragment_error_text_view" type="id" />
-    <item name="trend_fragment_recycler_view_poster" type="id" />
-    <item name="trend_fragment_recycler_view_title" type="id" />
+    <item name="trend_fragment_item_poster_image_view" type="id" />
+    <item name="trend_fragment_item_thumbnail_layout" type="id" />
+    <item name="trend_fragment_item_title_text_view" type="id" />
+    <item name="trend_fragment_item_text_view_title" type="id" />
+    <item name="trend_fragment_item_start_player_button" type="id" />
+    <item name="trend_fragment_item_player_view" type="id" />
+    <item name="trend_fragment_item_controls_layout" type="id" />
 
 </resources>

@@ -22,6 +22,7 @@ import com.example.seeamo.core.data.source.MovieDatabase
 import com.example.seeamo.core.di.IODispatchers
 import com.example.seeamo.core.utilize.extensions.getByState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
@@ -35,6 +36,7 @@ import kotlin.coroutines.resume
 @HiltViewModel
 class TrendViewModel @Inject constructor(
     private val saveStateHandle: SavedStateHandle,
+    @ApplicationContext private val context: Context,
     @IODispatchers private val ioDispatchers: CoroutineDispatcher,
     movieDatabase: MovieDatabase,
     private val movieDao: MovieDao,
@@ -49,7 +51,7 @@ class TrendViewModel @Inject constructor(
     }.flow.cachedIn(viewModelScope)
 
 
-    fun getTrendTrailer(context: Context, id: Int) = flow {
+    fun getTrendTrailer(id: Int) = flow {
         val uiState = TrendTrailerUIState(UIState.NONE)
         emit(uiState.copy(uiState = UIState.LOADING))
 
@@ -109,8 +111,18 @@ class TrendViewModel @Inject constructor(
             }.extract(youtubeUrl)
         }
 
+    var lastPlayedItemListPosition: Int?
+        get() = saveStateHandle[LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY]
+        set(value) = saveStateHandle.set(LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY, value)
+
+    var lastItemVideoPosition: Long?
+        get() = saveStateHandle[LAST_ITEM_VIDEO_POSITION_STATE_KEY]
+        set(value) = saveStateHandle.set(LAST_ITEM_VIDEO_POSITION_STATE_KEY, value)
+
     companion object {
         private const val TREND_TRAILER_UI_STATE_KEY = "trend_trailer_ui_state"
+        private const val LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY = "last_played_item_list_state"
+        private const val LAST_ITEM_VIDEO_POSITION_STATE_KEY = "last_item_video_position_state"
     }
 
 }
