@@ -3,6 +3,7 @@ package com.example.seeamo.trend.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.SparseArray
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
@@ -22,6 +23,7 @@ import com.example.seeamo.core.di.IODispatchers
 import com.example.seeamo.core.utilize.extensions.getByState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -32,6 +34,7 @@ import kotlin.coroutines.resume
 @OptIn(ExperimentalPagingApi::class)
 @HiltViewModel
 class TrendViewModel @Inject constructor(
+    private val saveStateHandle: SavedStateHandle,
     @IODispatchers private val ioDispatchers: CoroutineDispatcher,
     movieDatabase: MovieDatabase,
     private val movieDao: MovieDao,
@@ -56,13 +59,13 @@ class TrendViewModel @Inject constructor(
                 if (trailerResult != null) {
                     val youtubeUrl = "https://www.youtube.com/watch?v=${trailerResult.key}"
                     val trailerUrl = extractVideoUrlFromYoutube(context, youtubeUrl)
-                    emit(
-                        uiState.copy(
-                            uiState = UIState.SUCCEED,
-                            trailerUrl = trailerUrl,
-                            published_at = trailerResult.published_at
-                        )
+                    val updatedUIState = uiState.copy(
+                        uiState = UIState.SUCCEED,
+                        trailerUrl = trailerUrl,
+                        published_at = trailerResult.published_at
                     )
+                    setTrendTrailerUIState(updatedUIState)
+                    emit(updatedUIState)
                 } else
                     emit(
                         uiState.copy(
@@ -82,6 +85,13 @@ class TrendViewModel @Inject constructor(
         )
     }.flowOn(ioDispatchers)
 
+    val getSavedTrendTrailerUIState: StateFlow<TrendTrailerUIState?> =
+        saveStateHandle.getStateFlow(TREND_TRAILER_UI_STATE_KEY, null)
+
+    private fun setTrendTrailerUIState(trendTrailerUIState: TrendTrailerUIState) {
+        saveStateHandle[TREND_TRAILER_UI_STATE_KEY] = trendTrailerUIState
+    }
+
     @SuppressLint("StaticFieldLeak")
     private suspend fun extractVideoUrlFromYoutube(context: Context, youtubeUrl: String): String =
         suspendCancellableCoroutine {
@@ -98,5 +108,9 @@ class TrendViewModel @Inject constructor(
                 }
             }.extract(youtubeUrl)
         }
+
+    companion object {
+        private const val TREND_TRAILER_UI_STATE_KEY = "trend_trailer_ui_state"
+    }
 
 }

@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.core.widget.doOnTextChanged
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable.ProgressDrawableSize
 import com.example.seeamo.core.utilize.helper.LayoutHelper
 import com.example.seeamo.core.data.model.InitialMargin
 import com.example.seeamo.core.data.model.InitialPadding
@@ -360,6 +361,7 @@ fun MaterialButton.validate(
 
 fun MaterialButton.showProgress(
     showProgress: Boolean?,
+    @ProgressDrawableSize progressSize: Int = CircularProgressDrawable.DEFAULT,
     initialText: String? = null,
     progressColor: Int = BaseColor(context).onBackground,
     initialIcon: Drawable? = null
@@ -367,7 +369,7 @@ fun MaterialButton.showProgress(
     when (showProgress) {
         true -> {
             icon = CircularProgressDrawable(context!!).apply {
-                setStyle(CircularProgressDrawable.DEFAULT)
+                setStyle(progressSize)
                 setColorSchemeColors(progressColor)
                 iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
                 strokeWidth = 2.toDp(context).toFloat()
@@ -385,6 +387,7 @@ fun MaterialButton.showProgress(
             enableBtn()
             icon = initialIcon
             text = initialText
+            strokeWidth = 0
         }
     }
 }

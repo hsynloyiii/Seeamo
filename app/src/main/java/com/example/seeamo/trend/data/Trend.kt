@@ -1,10 +1,11 @@
 package com.example.seeamo.data.model
 
+import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import kotlinx.parcelize.Parcelize
 
 @JsonClass(generateAdapter = true)
 data class TrendResponse(
@@ -81,9 +82,10 @@ enum class UIState {
     FAILED
 }
 
+@Parcelize
 data class TrendTrailerUIState(
     val uiState: UIState,
     val trailerUrl: String = "",
     val published_at: String = "",
     val failure_message: String = ""
-)
+) : Parcelable
