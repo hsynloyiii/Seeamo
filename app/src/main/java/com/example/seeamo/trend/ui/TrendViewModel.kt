@@ -2,10 +2,12 @@ package com.example.seeamo.trend.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.AudioManager
 import android.util.SparseArray
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media.AudioAttributesCompat
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -21,10 +23,12 @@ import com.example.seeamo.core.data.source.MovieDao
 import com.example.seeamo.core.data.source.MovieDatabase
 import com.example.seeamo.core.di.IODispatchers
 import com.example.seeamo.core.utilize.extensions.getByState
+import com.example.seeamo.core.utilize.helper.ExoAudioFocusHelper
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player.Listener
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -36,7 +40,6 @@ import kotlin.coroutines.resume
 @HiltViewModel
 class TrendViewModel @Inject constructor(
     private val saveStateHandle: SavedStateHandle,
-    @ApplicationContext private val context: Context,
     @IODispatchers private val ioDispatchers: CoroutineDispatcher,
     movieDatabase: MovieDatabase,
     private val movieDao: MovieDao,
@@ -51,7 +54,7 @@ class TrendViewModel @Inject constructor(
     }.flow.cachedIn(viewModelScope)
 
 
-    fun getTrendTrailer(id: Int) = flow {
+    fun getTrendTrailer(id: Int, context: Context) = flow {
         val uiState = TrendTrailerUIState(UIState.NONE)
         emit(uiState.copy(uiState = UIState.LOADING))
 
@@ -66,7 +69,8 @@ class TrendViewModel @Inject constructor(
                         trailerUrl = trailerUrl,
                         published_at = trailerResult.published_at
                     )
-                    setTrendTrailerUIState(updatedUIState)
+//                    setTrendTrailerUIState(updatedUIState)
+                    savedTrendTrailerUIState = updatedUIState
                     emit(updatedUIState)
                 } else
                     emit(
@@ -87,12 +91,10 @@ class TrendViewModel @Inject constructor(
         )
     }.flowOn(ioDispatchers)
 
-    val getSavedTrendTrailerUIState: StateFlow<TrendTrailerUIState?> =
-        saveStateHandle.getStateFlow(TREND_TRAILER_UI_STATE_KEY, null)
+    var savedTrendTrailerUIState: TrendTrailerUIState?
+        get() = saveStateHandle[TREND_TRAILER_UI_STATE_KEY]
+        private set(value) = saveStateHandle.set(TREND_TRAILER_UI_STATE_KEY, value)
 
-    private fun setTrendTrailerUIState(trendTrailerUIState: TrendTrailerUIState) {
-        saveStateHandle[TREND_TRAILER_UI_STATE_KEY] = trendTrailerUIState
-    }
 
     @SuppressLint("StaticFieldLeak")
     private suspend fun extractVideoUrlFromYoutube(context: Context, youtubeUrl: String): String =
@@ -111,13 +113,120 @@ class TrendViewModel @Inject constructor(
             }.extract(youtubeUrl)
         }
 
+    // ExoPlayer
+    var exoPlayer: ExoPlayer? = null
+
+    private lateinit var audioManager: AudioManager
+
     var lastPlayedItemListPosition: Int?
         get() = saveStateHandle[LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY]
-        set(value) = saveStateHandle.set(LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY, value)
+        private set(value) = saveStateHandle.set(LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY, value)
 
-    var lastItemVideoPosition: Long?
+    var lastItemPlayerPosition: Long?
         get() = saveStateHandle[LAST_ITEM_VIDEO_POSITION_STATE_KEY]
-        set(value) = saveStateHandle.set(LAST_ITEM_VIDEO_POSITION_STATE_KEY, value)
+        private set(value) = saveStateHandle.set(LAST_ITEM_VIDEO_POSITION_STATE_KEY, value)
+
+    fun setupPlayer(
+        context: Context,
+        listener: Listener,
+        shouldStartPlayer: Boolean = false,
+        mediaUrl: String? = null
+    ) {
+        if (exoPlayer != null)
+            return
+
+        audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val audioAttributes = AudioAttributesCompat.Builder()
+            .setContentType(AudioAttributesCompat.CONTENT_TYPE_MUSIC)
+            .setUsage(AudioAttributesCompat.USAGE_MEDIA)
+            .build()
+        exoPlayer =
+            ExoAudioFocusHelper(
+                ExoPlayer.Builder(context).build(),
+                audioManager,
+                audioAttributes
+            ).apply {
+                addListener(listener)
+            }
+
+        if (shouldStartPlayer)
+            startPlayer(mediaUrl = mediaUrl)
+    }
+
+    fun releasePlayer() {
+        exoPlayer?.release()
+        exoPlayer = null
+    }
+
+    fun startPlayer(mediaUrl: String?) {
+        if (exoPlayer == null && mediaUrl == null)
+            return
+
+        with(exoPlayer!!) {
+            clearMediaItems()
+            setMediaItem(MediaItem.fromUri(mediaUrl!!))
+            seekTo(lastItemPlayerPosition ?: 0)
+            prepare()
+            playWhenReady = true
+        }
+    }
+
+    fun removePlayerListener(listener: Listener) {
+        if (exoPlayer == null)
+            return
+        exoPlayer!!.removeListener(listener)
+    }
+
+    fun addPlayerListener(listener: Listener) {
+        if (exoPlayer == null)
+            return
+        exoPlayer!!.addListener(listener)
+    }
+
+    fun playPlayer() {
+        if (exoPlayer == null)
+            return
+        exoPlayer!!.play()
+    }
+
+    fun pausePlayer() {
+        if (exoPlayer == null)
+            return
+        exoPlayer!!.pause()
+    }
+
+    fun isPlayerPlaying(): Boolean = if (exoPlayer == null) false else exoPlayer!!.isPlaying
+
+    fun setLastPlayedItemListPosition(position: Int) {
+        lastPlayedItemListPosition = position
+    }
+
+    fun savePlayerCurrentPosition() {
+        if (exoPlayer != null)
+            lastItemPlayerPosition = exoPlayer?.currentPosition
+    }
+
+    fun setupSessionAndController() {
+//        if (this::mediaSession.isInitialized ||
+//            this::mediaSessionConnector.isInitialized ||
+//            this::mediaController.isInitialized
+//        )
+//            return
+//
+//        mediaSession =
+//            MediaSessionCompat(requireContext(), TrendFragment.TAG).apply { setMediaButtonReceiver(null) }
+//        mediaSessionConnector = MediaSessionConnector(mediaSession).apply {
+//            setPlayer(trendViewModel.exoPlayer)
+//        }
+//
+//        while (activity == null)
+//            return
+//
+//        mediaController =
+//            MediaControllerCompat(context, mediaSession.sessionToken).also { mediaController ->
+//                MediaControllerCompat.setMediaController(requireActivity(), mediaController)
+//            }
+    }
 
     companion object {
         private const val TREND_TRAILER_UI_STATE_KEY = "trend_trailer_ui_state"

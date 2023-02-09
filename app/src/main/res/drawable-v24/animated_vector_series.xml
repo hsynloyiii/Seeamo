@@ -64,7 +64,7 @@
             <set>
                 <objectAnimator
                     android:propertyName="fillColor"
-                    android:duration="350"
+                    android:duration="250"
                     android:valueFrom="?attr/colorOnBackground"
                     android:valueTo="?attr/backgroundColor"
                     android:interpolator="@android:interpolator/fast_out_slow_in"/>

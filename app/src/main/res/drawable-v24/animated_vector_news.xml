@@ -22,7 +22,7 @@
             <set>
                 <objectAnimator
                     android:propertyName="fillColor"
-                    android:duration="350"
+                    android:duration="250"
                     android:valueFrom="?attr/backgroundColor"
                     android:valueTo="?attr/colorOnBackground"
                     android:valueType="colorType"

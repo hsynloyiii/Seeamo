@@ -24,17 +24,17 @@
         <aapt:attr name="android:animation">
             <set>
                 <objectAnimator
-                    android:duration="@integer/material_motion_duration_long_2"
+                    android:duration="250"
                     android:propertyName="rotation"
                     android:valueFrom="30"
                     android:valueTo="0" />
                 <objectAnimator
-                    android:duration="@integer/material_motion_duration_long_2"
+                    android:duration="250"
                     android:propertyName="pivotX"
                     android:valueFrom="5"
                     android:valueTo="0" />
                 <objectAnimator
-                    android:duration="@integer/material_motion_duration_long_2"
+                    android:duration="250"
                     android:propertyName="pivotY"
                     android:valueFrom="13"
                     android:valueTo="0" />
