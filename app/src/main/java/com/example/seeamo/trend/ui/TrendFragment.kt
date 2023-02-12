@@ -10,6 +10,7 @@ import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +22,8 @@ import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.LayoutHelper
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class TrendFragment : BaseFragment(false) {
@@ -36,7 +39,7 @@ class TrendFragment : BaseFragment(false) {
     private lateinit var errorTextView: TextView
 
     private val trendViewModel: TrendViewModel by viewModels()
-    private lateinit var trendAdapter: TrendAdapter
+    private var trendAdapter: TrendAdapter? = null
 
 //    private lateinit var mediaSession: MediaSessionCompat
 //    private lateinit var mediaSessionConnector: MediaSessionConnector
@@ -72,13 +75,12 @@ class TrendFragment : BaseFragment(false) {
             id = R.id.trend_fragment_swipe_refresh_layout
 
             setOnRefreshListener {
-                if (this@TrendFragment::trendAdapter.isInitialized) {
+                trendAdapter?.apply {
                     if (errorTextView.isVisible)
-                        trendAdapter.retry()
+                        retry()
                     else
-                        trendAdapter.refresh()
+                        refresh()
                 }
-
             }
 
             mainLayout.addView(
@@ -119,8 +121,7 @@ class TrendFragment : BaseFragment(false) {
             isVisible = false
 
             setOnClickListener {
-                if (this@TrendFragment::trendAdapter.isInitialized)
-                    trendAdapter.retry()
+                trendAdapter?.retry()
             }
 
             mainLayout.addView(
@@ -137,35 +138,31 @@ class TrendFragment : BaseFragment(false) {
     }
 
     override fun setup(savedInstanceState: Bundle?) {
-        if (this::trendAdapter.isInitialized)
-            Log.i(TAG, "setup: $trendAdapter")
-        else
-            Log.i(TAG, "setup: null")
-
+        repeatViewLifecycle {
+            Log.i(TAG, "bindTrendData: ")
+            trendViewModel.trendResult.collect {
+                trendAdapter?.submitData(it)
+            }
+        }
         bindTrendData()
     }
 
     private fun bindTrendData() {
-        if (!this::trendAdapter.isInitialized)
-            trendAdapter =
-                TrendAdapter(
-                    requireContext(),
-                    baseColor,
-                    layoutHelper,
-                    trendViewModel
-                )
+        if (trendAdapter != null)
+            return
 
-        trendAdapter.run {
-            trendRecyclerView.adapter = withLoadStateFooter(
-                TrendAdapter.TrendLoadStateAdapter(baseColor, layoutHelper) { trendAdapter.retry() }
+        trendAdapter =
+            TrendAdapter(
+                requireContext(),
+                baseColor,
+                layoutHelper,
+                trendViewModel
             )
 
-            repeatViewLifecycle {
-                Log.i(TAG, "bindTrendData: ")
-                trendViewModel.trendResult.collect {
-                    submitData(it)
-                }
-            }
+        trendAdapter!!.run {
+            trendRecyclerView.adapter = withLoadStateFooter(
+                TrendAdapter.TrendLoadStateAdapter(baseColor, layoutHelper) { retry() }
+            )
 
             addLoadStateListener { combinedLoadState ->
                 swipeRefreshLayout.isRefreshing = combinedLoadState.refresh is LoadState.Loading
@@ -234,17 +231,17 @@ class TrendFragment : BaseFragment(false) {
     override fun onStart() {
         super.onStart()
         Log.i(TAG, "onStart: ")
-        if (trendViewModel.exoPlayer != null) {
+//        if (trendViewModel.exoPlayer != null) {
 //            mediaSessionConnector.setPlayer(trendViewModel.exoPlayer)
 //            mediaSession.isActive = true
-            if (this::trendRecyclerView.isInitialized) {
-                val lm = trendRecyclerView.layoutManager as LinearLayoutManager
-                if (trendViewModel.lastPlayedItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
-                    trendViewModel.playPlayer()
-                    trendAdapter.setPlayPauseButtonIcon(isPlaying = true)
-                }
-            }
-        }
+//            if (this::trendRecyclerView.isInitialized) {
+//                val lm = trendRecyclerView.layoutManager as LinearLayoutManager
+//                if (trendViewModel.lastPlayedItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
+//                    trendViewModel.playPlayer()
+//                    trendAdapter?.setPlayPauseButtonIcon(isPlaying = true)
+//                }
+//            }
+//        }
     }
 
     override fun onPause() {
@@ -257,8 +254,8 @@ class TrendFragment : BaseFragment(false) {
         super.onStop()
         Log.i(TAG, "onStop: ")
         trendViewModel.pausePlayer()
-        trendViewModel.removePlayerListener(trendAdapter)
-        trendAdapter.removeLoadStateListener {  }
+        trendAdapter?.setPlayPauseButtonIcon(isPlaying = false)
+
 //            mediaSessionConnector.setPlayer(null)
 //            mediaSession.isActive = false
     }
@@ -266,8 +263,12 @@ class TrendFragment : BaseFragment(false) {
     override fun onDestroy() {
         super.onDestroy()
         if (!isFragmentBeingDestroyed && !isStateSaved)
-            // The fragment destroyed by other reason than configuration changes
+        // The fragment destroyed by other reason than configuration changes
             trendViewModel.releasePlayer()
+        else {
+            val adapter = trendAdapter ?: return
+            trendViewModel.removePlayerListener(adapter)
+        }
 
         isFragmentBeingDestroyed = true
     }

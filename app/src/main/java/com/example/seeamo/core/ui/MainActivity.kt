@@ -4,12 +4,9 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.view.animation.AnimationUtils
 import androidx.appcompat.widget.SearchView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.get
 import androidx.core.view.setPadding
@@ -24,7 +21,7 @@ import com.example.seeamo.R
 import com.example.seeamo.setting.MenuFragment
 import com.example.seeamo.content.MovieFragment
 import com.example.seeamo.news.NewsFragment
-import com.example.seeamo.content.SeriesFragment
+import com.example.seeamo.search.SearchFragment
 import com.example.seeamo.trend.ui.TrendFragment
 import com.example.seeamo.core.utilize.base.BaseActivity
 import com.example.seeamo.core.utilize.extensions.*
@@ -45,14 +42,12 @@ class MainActivity : BaseActivity() {
     private lateinit var appBarLayout: AppBarLayout
     private lateinit var toolbar: MaterialToolbar
 
-    private lateinit var appBarConstraintLayout: ConstraintLayout
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var fragmentContainerView: FragmentContainerView
 
     @SuppressLint("InflateParams")
     override fun createViews(savedInstanceState: Bundle?) {
         root = CoordinatorLayout(this)
-
 
         mainLayout = (root as CoordinatorLayout).apply {
             defaultAppearance(baseColor, false)
@@ -63,10 +58,9 @@ class MainActivity : BaseActivity() {
             fitsSystemWindows = true
             isLiftOnScroll = false
 
-            statusBarForeground = MaterialShapeDrawable.createWithElevationOverlay(
-                context
-            )
-            setStatusBarForegroundColor(baseColor.background)
+            statusBarForeground =
+                MaterialShapeDrawable.createWithElevationOverlay(context)
+
             setBackgroundColor(baseColor.background)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -74,7 +68,6 @@ class MainActivity : BaseActivity() {
                 outlineSpotShadowColor = baseColor.onBackground.withAlpha(0.52)
             }
 
-            minimumHeight = 36.toDp(this@MainActivity)
             mainLayout.addView(
                 this,
                 LayoutHelper.MATCH_PARENT,
@@ -113,7 +106,7 @@ class MainActivity : BaseActivity() {
                 this,
                 layoutHelper.createAppBarLayout(
                     LayoutHelper.MATCH_PARENT,
-                    22.toDp(context),
+                    56,
                     scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
                             AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
                             AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
@@ -121,22 +114,19 @@ class MainActivity : BaseActivity() {
             )
         }
 
-        appBarConstraintLayout = ConstraintLayout(this).apply {
-            setBackgroundColor(baseColor.transparent)
+        fragmentContainerView = (layoutInflater.inflate(
+            R.layout.activity_container_fragment,
+            null
+        ) as FragmentContainerView).apply {
             mainLayout.addView(
                 this,
                 layoutHelper.createCoordinator(
                     LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT,
-                    behavior = AppBarLayout.ScrollingViewBehavior()
+                    behavior = ScrollingViewWithBottomNavigationBehavior()
                 )
             )
-            applyMarginWindowInsets(applyBottom = true)
+            applyPaddingWindowInsets(applyBottom = true)
         }
-
-        fragmentContainerView = layoutInflater.inflate(
-            R.layout.activity_container_fragment,
-            null
-        ) as FragmentContainerView
 
         bottomNavigationView = BottomNavigationView(this).apply {
             id = R.id.main_bottom_navigation
@@ -150,33 +140,25 @@ class MainActivity : BaseActivity() {
                 unCheckedColor = baseColor.onBackground
             )
             itemIconTintList = null
-//            itemPaddingTop = 8.toDp(this@MainActivity)
-//            itemPaddingBottom = 8.toDp(this@MainActivity)
+            itemPaddingTop = 0
+            itemPaddingBottom = 0
             elevation = 0f
             setPadding(0)
 
             itemIconSize = 26.toDp(context)
 
-
+            minimumHeight = 56.toDp(context)
             mainLayout.addView(
                 this,
                 layoutHelper.createCoordinator(
                     LayoutHelper.MATCH_PARENT,
-                    22.toDp(this@MainActivity),
-                    gravity = Gravity.BOTTOM
+                    LayoutHelper.WRAP_CONTENT,
+                    gravity = Gravity.BOTTOM,
+                    insetEdge = Gravity.BOTTOM
                 )
             )
             applyMarginWindowInsets(applyBottom = true)
         }
-
-        appBarConstraintLayout.addView(
-            fragmentContainerView,
-            layoutHelper.createConstraints(
-                LayoutHelper.MATCH_PARENT,
-                LayoutHelper.MATCH_PARENT,
-                bottomMargin = 68.toDp(this@MainActivity)
-            )
-        )
 
     }
 
@@ -200,8 +182,8 @@ class MainActivity : BaseActivity() {
             fragment<MovieFragment>(NavRoutes.Main.MOVIE_FRAGMENT).apply {
                 label = resources.getString(R.string.movie_fragment)
             }
-            fragment<SeriesFragment>(NavRoutes.Main.SERIES_FRAGMENT).apply {
-                label = resources.getString(R.string.series_fragment)
+            fragment<SearchFragment>(NavRoutes.Main.SEARCH_FRAGMENT).apply {
+                label = resources.getString(R.string.search_fragment)
             }
             fragment<NewsFragment>(NavRoutes.Main.NEWS_FRAGMENT).apply {
                 label = resources.getString(R.string.news_fragment)
@@ -219,16 +201,16 @@ class MainActivity : BaseActivity() {
         val menuIds = listOf(
             navController.graph[NavRoutes.Main.TREND_FRAGMENT].id,
             navController.graph[NavRoutes.Main.MOVIE_FRAGMENT].id,
-            navController.graph[NavRoutes.Main.SERIES_FRAGMENT].id,
+            navController.graph[NavRoutes.Main.SEARCH_FRAGMENT].id,
             navController.graph[NavRoutes.Main.NEWS_FRAGMENT].id,
             navController.graph[NavRoutes.Main.MENU_FRAGMENT].id
         )
         val menuTitles =
-            listOf(R.string.trend, R.string.movie, R.string.series, R.string.news, R.string.menu)
+            listOf(R.string.trend, R.string.movie, R.string.search, R.string.news, R.string.menu)
         val menuIcons = listOf(
             R.drawable.animated_trend,
             R.drawable.animated_movie,
-            R.drawable.animated_series,
+            R.drawable.animated_search,
             R.drawable.animated_news,
             R.drawable.animated_menu
         )
@@ -259,25 +241,25 @@ class MainActivity : BaseActivity() {
                 NavRoutes.Main.TREND_FRAGMENT -> {
                     setupToolbarWithNavController(
                         title = resources.getString(R.string.app_name),
-                        searchQueryHint = "Search all movie/series ..."
+                        isSearchMenuVisible = false
                     ) {}
                 }
                 NavRoutes.Main.MOVIE_FRAGMENT -> {
                     setupToolbarWithNavController(
                         title = resources.getString(R.string.movie),
-                        searchQueryHint = "Search all movie/series ..."
+                        isSearchMenuVisible = false
                     ) {}
                 }
-                NavRoutes.Main.SERIES_FRAGMENT -> {
+                NavRoutes.Main.SEARCH_FRAGMENT -> {
                     setupToolbarWithNavController(
-                        title = resources.getString(R.string.series),
+                        title = resources.getString(R.string.search),
                         searchQueryHint = "Search all movie/series ..."
                     ) {}
                 }
                 NavRoutes.Main.NEWS_FRAGMENT -> {
                     setupToolbarWithNavController(
                         title = resources.getString(R.string.news),
-                        searchQueryHint = "Search any news/journal ..."
+                        isSearchMenuVisible = false
                     ) {}
                 }
                 NavRoutes.Main.MENU_FRAGMENT -> {

@@ -51,6 +51,7 @@ class TrendAdapter(
     override fun onBindViewHolder(holder: TrendViewHolder, position: Int) {
         val trendResult = getItem(position) ?: return
         if (position == trendViewModel.lastPlayedItemListPosition) {
+            Log.i(TrendFragment.TAG, "onBindViewHolder: ")
             trendViewModel.setupPlayer(
                 context = context,
                 listener = this@TrendAdapter,
@@ -72,9 +73,7 @@ class TrendAdapter(
             holder.thumbnailLayout.visibility = View.GONE
             holder.playerView.visibility = View.VISIBLE
 
-            with(trendViewModel.exoPlayer!!) {
-                holder.playerView.player = this
-            }
+            holder.playerView.player = trendViewModel.exoPlayer
             trendViewModel.playPlayer()
 
             launchRemainingPlayerTimeScope(holder = holder)

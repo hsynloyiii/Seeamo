@@ -11,7 +11,7 @@ import com.example.seeamo.core.utilize.helper.LayoutHelper
 
 abstract class BaseFragment(
     private val hasBackGestureCallBack: Boolean
-): Fragment() {
+) : Fragment() {
 
     lateinit var root: View
 
@@ -45,9 +45,11 @@ abstract class BaseFragment(
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        layoutHelper = LayoutHelper(context)
-        baseColor = BaseColor(context ?: requireContext())
-        createViews(savedInstanceState)
+        if (!this::root.isInitialized) {
+            layoutHelper = LayoutHelper(context)
+            baseColor = BaseColor(context ?: requireContext())
+            createViews(savedInstanceState)
+        }
         return root
     }
 
