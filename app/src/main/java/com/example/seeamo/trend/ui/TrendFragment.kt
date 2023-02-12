@@ -2,7 +2,6 @@ package com.example.seeamo.trend.ui
 
 import android.animation.LayoutTransition
 import android.os.Bundle
-import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -10,7 +9,6 @@ import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,16 +18,14 @@ import com.example.seeamo.R
 import com.example.seeamo.core.utilize.base.BaseFragment
 import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.LayoutHelper
+import com.google.android.exoplayer2.Player
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class TrendFragment : BaseFragment(false) {
 
     companion object {
-        const val TAG = "TrendFragment"
         const val IS_FRAGMENT_BEING_DESTROYED_KEY = "isFragmentBeingDestroyed"
     }
 
@@ -139,7 +135,6 @@ class TrendFragment : BaseFragment(false) {
 
     override fun setup(savedInstanceState: Bundle?) {
         repeatViewLifecycle {
-            Log.i(TAG, "bindTrendData: ")
             trendViewModel.trendResult.collect {
                 trendAdapter?.submitData(it)
             }
@@ -157,7 +152,7 @@ class TrendFragment : BaseFragment(false) {
                 baseColor,
                 layoutHelper,
                 trendViewModel
-            )
+            ) {}
 
         trendAdapter!!.run {
             trendRecyclerView.adapter = withLoadStateFooter(
@@ -189,38 +184,36 @@ class TrendFragment : BaseFragment(false) {
                 RecyclerView.OnChildAttachStateChangeListener {
                 override fun onChildViewAttachedToWindow(view: View) {
                     val lm = trendRecyclerView.layoutManager as LinearLayoutManager
-                    if (lastPlayedItemView != null &&
-                        lastPlayedItemView == view &&
-                        trendViewModel.lastPlayedItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()
-                    ) {
-                        lastPlayedThumbnailLayout?.visibility = View.GONE
-                        lastPlayedPlayerView?.visibility = View.VISIBLE
-                        (lastPlayedItemView as FrameLayout).layoutTransition =
-                            LayoutTransition()
-//                    if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PAUSED) {
-//                        mediaController.transportControls.play()
-//                        setPlayPauseButtonIcon(true)
-//                    }
-                        if (trendViewModel.isPlayerPlaying()) {
-                            trendViewModel.playPlayer()
-                            setPlayPauseButtonIcon(isPlaying = true)
+                    lastPlayedViewHolder?.run {
+                        if (itemView == view &&
+                            trendViewModel.lastPlayedItemListPosition in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()
+                        ) {
+                            thumbnailLayout.visibility = View.GONE
+                            playerView.visibility = View.VISIBLE
+                            (itemView as FrameLayout).layoutTransition = LayoutTransition()
+                            if (trendViewModel.isPlayerPaused() && !trendViewModel.isPlayerEnded()) {
+                                trendViewModel.playPlayer()
+                                if (!trendViewModel.isPlayerBuffering())
+                                    setPlayPauseButtonIcon(isPlaying = true)
+                            }
                         }
                     }
                 }
 
                 override fun onChildViewDetachedFromWindow(view: View) {
-                    if (lastPlayedItemView != null && lastPlayedItemView == view) {
-                        (lastPlayedItemView as FrameLayout).layoutTransition = null
-                        lastPlayedThumbnailLayout?.visibility = View.VISIBLE
-                        lastPlayedPlayerView?.visibility = View.GONE
-//                    if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
-//                        mediaController.transportControls.pause()
-//                        setPlayPauseButtonIcon(false)
-                        if (trendViewModel.isPlayerPlaying()) {
-                            trendViewModel.pausePlayer()
-                            setPlayPauseButtonIcon(isPlaying = false)
+                    lastPlayedViewHolder?.run {
+                        if (itemView == view) {
+                            (itemView as FrameLayout).layoutTransition = null
+                            thumbnailLayout.visibility = View.VISIBLE
+                            playerView.visibility = View.GONE
+                            if (trendViewModel.isPlayerPlaying() && !trendViewModel.isPlayerEnded()) {
+                                trendViewModel.pausePlayer()
+                                if (!trendViewModel.isPlayerBuffering())
+                                    setPlayPauseButtonIcon(isPlaying = false)
+                            }
                         }
                     }
+
                 }
 
             })
@@ -230,7 +223,7 @@ class TrendFragment : BaseFragment(false) {
 
     override fun onStart() {
         super.onStart()
-        Log.i(TAG, "onStart: ")
+        logDebug { "onStart" }
 //        if (trendViewModel.exoPlayer != null) {
 //            mediaSessionConnector.setPlayer(trendViewModel.exoPlayer)
 //            mediaSession.isActive = true
@@ -242,20 +235,20 @@ class TrendFragment : BaseFragment(false) {
 //                }
 //            }
 //        }
+        if (!trendViewModel.isPlayerBuffering() && !trendViewModel.isPlayerEnded() && trendViewModel.isPlayerPaused())
+            trendAdapter?.setPlayPauseButtonIcon(isPlaying = false)
     }
 
     override fun onPause() {
         super.onPause()
-        Log.i(TAG, "onPause: ")
-        trendViewModel.savePlayerCurrentPosition()
+        logDebug { "onPause" }
+//        trendViewModel.savePlayerCurrentPosition()
     }
 
     override fun onStop() {
         super.onStop()
-        Log.i(TAG, "onStop: ")
+        logDebug { "onStop" }
         trendViewModel.pausePlayer()
-        trendAdapter?.setPlayPauseButtonIcon(isPlaying = false)
-
 //            mediaSessionConnector.setPlayer(null)
 //            mediaSession.isActive = false
     }

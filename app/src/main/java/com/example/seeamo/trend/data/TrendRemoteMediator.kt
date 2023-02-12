@@ -12,6 +12,7 @@ import com.example.seeamo.data.model.TrendRemoteKey
 import com.example.seeamo.data.model.TrendResult
 import com.example.seeamo.trend.ui.TrendFragment
 import com.example.seeamo.core.utilize.extensions.getByState
+import com.example.seeamo.core.utilize.extensions.logError
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import java.io.IOException
@@ -90,7 +91,7 @@ class TrendRemoteMediator(
                     MediatorResult.Success(endOfPaginationReached = endOfPagination)
                 },
                 onFailure = { e ->
-                    Log.i(TrendFragment.TAG, "${e.message}")
+                    logError { e.message.toString() }
                     MediatorResult.Error(e)
                 }
             )

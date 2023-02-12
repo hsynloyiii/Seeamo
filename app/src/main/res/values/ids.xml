@@ -26,5 +26,7 @@
     <item name="trend_fragment_item_play_pause_button" type="id" />
     <item name="trend_fragment_item_mute_button" type="id" />
     <item name="trend_fragment_item_remaining_time_text_view" type="id" />
+    <item name="trend_fragment_item_player_arrow_expand_button" type="id" />
+    <item name="trend_fragment_item_watch_again_button" type="id" />
 
 </resources>

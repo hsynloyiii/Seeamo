@@ -163,7 +163,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun setup(savedInstanceState: Bundle?) {
-        Log.i(TrendFragment.TAG, "activity setup: ")
+        logDebug { "setup" }
         setupNavGraph()
     }
 
@@ -302,6 +302,6 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i(TrendFragment.TAG, "activity onDestroy: ")
+        logDebug { "onDestroy" }
     }
 }

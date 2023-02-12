@@ -2,7 +2,6 @@ package com.example.seeamo.trend.ui
 
 import android.annotation.SuppressLint
 import android.graphics.Outline
-import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -38,7 +37,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("RtlHardcoded", "SetTextI18n")
 class TrendViewHolder(
     parent: View,
-    layoutHelper: LayoutHelper,
+    private val layoutHelper: LayoutHelper,
     baseColor: BaseColor,
     private val trendViewModel: TrendViewModel
 ) : RecyclerView.ViewHolder(parent) {
@@ -135,25 +134,7 @@ class TrendViewHolder(
             isClickable = true
             isFocusable = true
 
-            val hideControlsLayoutRunnable = Runnable {
-                hideControlsLayoutAnimation()
-            }
-            setOnClickListener {
-                if (controlsLayout.isVisible) {
-                    playerView.removeCallbacks(hideControlsLayoutRunnable)
-                    hideControlsLayoutAnimation()
-                } else controlsLayout.apply {
-                    alpha = 0f
-                    visibility = View.VISIBLE
-
-                    animate()
-                        .alpha(1f)
-                        .setDuration(BaseAnimation.DURATION_MEDIUM_1)
-                        .withEndAction {
-                            playerView.postDelayed(hideControlsLayoutRunnable, 5000)
-                        }
-                }
-            }
+            setOnClickListener(playerViewClickListener)
 
             mainLayout.addView(
                 this,
@@ -241,10 +222,57 @@ class TrendViewHolder(
                     bottomMargin = 12.toDp(context)
                 )
             )
+
+            val playerExpandArrowButton = MaterialButton(context).apply {
+                id = R.id.trend_fragment_item_player_arrow_expand_button
+                iconButton(
+                    icon = ContextCompat.getDrawable(context, R.drawable.ic_round_arrow_expand_24),
+                    bcColor = baseColor.baseColorStateList(baseColor.transparent),
+                    iconTint = baseColor.baseColorStateList(baseColor.gray),
+                    colorRipple = baseColor.withoutRippleColor(),
+                    isCircular = true
+                )
+            }
+            addView(
+                playerExpandArrowButton,
+                layoutHelper.createConstraints(
+                    ViewHelper.Button.ICON_BUTTON_WIDTH,
+                    ViewHelper.Button.ICON_BUTTON_HEIGHT,
+                    startToStart = 0,
+                    topToTop = 0
+                )
+            )
         }
     }
 
-    private fun hideControlsLayoutAnimation() {
+    private val watchAgainButton: MaterialButton by lazy {
+        MaterialButton(context).apply {
+            id = R.id.trend_fragment_item_watch_again_button
+            iconButton(
+                icon = ContextCompat.getDrawable(context, R.drawable.ic_round_recycle_24),
+                bcColor = baseColor.baseColorStateList(baseColor.transparent),
+                iconTint = baseColor.baseColorStateList(baseColor.white),
+                iconSize = 32.toDp(context),
+                colorRipple = baseColor.baseRippleColorStateList(baseColor.white),
+                isCircular = true
+            )
+        }
+    }
+
+    private val playerViewClickListener = View.OnClickListener {
+        if (controlsLayout.isVisible) {
+            playerView.removeCallbacks(hideControlsLayoutRunnable)
+            hideControlsLayout()
+        } else showControlsLayout {
+            playerView.postDelayed(hideControlsLayoutRunnable, 5000)
+        }
+    }
+
+    private val hideControlsLayoutRunnable = Runnable {
+        hideControlsLayout()
+    }
+
+    private fun hideControlsLayout() {
         controlsLayout.animate()
             .alpha(0f)
             .setDuration(BaseAnimation.DURATION_MEDIUM_1)
@@ -253,11 +281,26 @@ class TrendViewHolder(
             }
     }
 
+    private fun showControlsLayout(endAction: (() -> Unit)? = null) {
+        controlsLayout.apply {
+            alpha = 0f
+            visibility = View.VISIBLE
+
+            animate()
+                .alpha(1f)
+                .setDuration(BaseAnimation.DURATION_MEDIUM_1)
+                .withEndAction {
+                    endAction?.invoke()
+                }
+        }
+    }
+
     fun bind(
         trendResult: TrendResult,
         startPlayer: (TrendTrailerUIState) -> Unit,
         onPlayPauseButtonClick: (MaterialButton) -> Unit,
-        onMuteButtonClick: (MaterialButton) -> Unit
+        onMuteButtonClick: (MaterialButton) -> Unit,
+        onPlayerExpandButtonClick: (StyledPlayerView) -> Unit
     ) {
         ImageHelper.loadUriTo(
             posterImageView,
@@ -267,10 +310,6 @@ class TrendViewHolder(
         )
 
         titleTextView.text = trendResult.original_title
-
-        mainLayout.setOnClickListener {
-            Log.i(TrendFragment.TAG, "$itemView")
-        }
 
         startPlayerButton.setOnClickListener {
             trendViewModel.viewModelScope.launch {
@@ -309,6 +348,44 @@ class TrendViewHolder(
                 onMuteButtonClick(this)
             }
         }
+
+        (controlsLayout.getChildAt(3) as MaterialButton).setOnClickListener {
+            onPlayerExpandButtonClick(playerView)
+        }
     }
 
+    fun addWatchAgainButton() {
+        watchAgainButton.setOnClickListener {
+            trendViewModel.playAgain()
+            removeWatchAgainButton()
+        }
+        controlsLayout.apply {
+            getChildAt(0).visibility = View.GONE
+            addView(
+                watchAgainButton,
+                layoutHelper.createConstraints(
+                    64,
+                    64,
+                    startToStart = 0,
+                    endToEnd = 0,
+                    bottomToBottom = 0,
+                    topToTop = 0
+                )
+            )
+        }
+        playerView.apply {
+            removeCallbacks(hideControlsLayoutRunnable)
+            setOnClickListener(null)
+        }
+        showControlsLayout()
+    }
+
+    private fun removeWatchAgainButton() {
+        controlsLayout.apply {
+            getChildAt(0).visibility = View.VISIBLE
+            removeView(watchAgainButton)
+        }
+        playerView.setOnClickListener(playerViewClickListener)
+        hideControlsLayout()
+    }
 }

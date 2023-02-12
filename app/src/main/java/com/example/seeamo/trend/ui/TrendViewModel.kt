@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioManager
 import android.util.SparseArray
+import android.widget.TextView
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,16 +23,17 @@ import com.example.seeamo.trend.data.TrendRemoteMediator
 import com.example.seeamo.core.data.source.MovieDao
 import com.example.seeamo.core.data.source.MovieDatabase
 import com.example.seeamo.core.di.IODispatchers
+import com.example.seeamo.core.utilize.extensions.convertMillisToCountDownFormat
 import com.example.seeamo.core.utilize.extensions.getByState
 import com.example.seeamo.core.utilize.helper.ExoAudioFocusHelper
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.Listener
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -95,7 +97,6 @@ class TrendViewModel @Inject constructor(
         get() = saveStateHandle[TREND_TRAILER_UI_STATE_KEY]
         private set(value) = saveStateHandle.set(TREND_TRAILER_UI_STATE_KEY, value)
 
-
     @SuppressLint("StaticFieldLeak")
     private suspend fun extractVideoUrlFromYoutube(context: Context, youtubeUrl: String): String =
         suspendCancellableCoroutine {
@@ -115,16 +116,13 @@ class TrendViewModel @Inject constructor(
 
     // ExoPlayer
     var exoPlayer: ExoPlayer? = null
-
     private lateinit var audioManager: AudioManager
+    private var defaultVideoVolume = 1f
+    var isPlayerMuted = false
 
     var lastPlayedItemListPosition: Int?
         get() = saveStateHandle[LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY]
         private set(value) = saveStateHandle.set(LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY, value)
-
-    var lastItemPlayerPosition: Long?
-        get() = saveStateHandle[LAST_ITEM_VIDEO_POSITION_STATE_KEY]
-        private set(value) = saveStateHandle.set(LAST_ITEM_VIDEO_POSITION_STATE_KEY, value)
 
     fun setupPlayer(
         context: Context,
@@ -165,73 +163,79 @@ class TrendViewModel @Inject constructor(
         with(exoPlayer!!) {
             clearMediaItems()
             setMediaItem(MediaItem.fromUri(mediaUrl!!))
-            seekTo(lastItemPlayerPosition ?: 0)
             prepare()
             playWhenReady = true
+            if (isPlayerMuted) {
+                volume = 1f
+                isPlayerMuted = false
+            }
+            defaultVideoVolume = volume
         }
     }
 
     fun removePlayerListener(listener: Listener) {
-        if (exoPlayer == null)
-            return
-        exoPlayer!!.removeListener(listener)
+        exoPlayer?.removeListener(listener)
     }
 
     fun addPlayerListener(listener: Listener) {
-        if (exoPlayer == null)
-            return
-        exoPlayer!!.addListener(listener)
+        exoPlayer?.addListener(listener)
     }
 
     fun playPlayer() {
-        if (exoPlayer == null)
-            return
-        exoPlayer!!.play()
+        exoPlayer?.play()
     }
 
     fun pausePlayer() {
-        if (exoPlayer == null)
-            return
-        exoPlayer!!.pause()
+        exoPlayer?.pause()
     }
 
-    fun isPlayerPlaying(): Boolean = if (exoPlayer == null) false else exoPlayer!!.isPlaying
+    fun mutePlayer() {
+        exoPlayer?.volume = 0f
+        isPlayerMuted = true
+    }
+
+    fun unMutePlayer() {
+        exoPlayer?.volume = defaultVideoVolume
+        isPlayerMuted = false
+    }
+
+    fun playAgain() {
+        exoPlayer?.seekTo(0)
+        playPlayer()
+    }
+
+    var currentPositionJob: Job? = null
+    fun startUpdatingCurrentPositionJob(invoke: (currentPosition: Long, duration: Long) -> Unit) {
+        if (exoPlayer == null && currentPositionJob != null)
+            return
+        currentPositionJob = viewModelScope.launch {
+            while (isActive) {
+                val currentPosition = exoPlayer!!.currentPosition
+                val duration = exoPlayer!!.duration
+                if (currentPosition > 0)
+                    invoke(currentPosition, duration)
+                delay(1000)
+            }
+        }
+    }
+
+    fun stopUpdatingCurrentPositionJob() {
+        currentPositionJob?.cancel()
+        currentPositionJob = null
+    }
+
+    fun isPlayerPlaying(): Boolean = exoPlayer?.isPlaying == true
+    fun isPlayerPaused(): Boolean = exoPlayer?.isPlaying == false
+    fun isPlayerEnded(): Boolean = exoPlayer?.playbackState == Player.STATE_ENDED
+    fun isPlayerBuffering(): Boolean = exoPlayer?.playbackState == Player.STATE_BUFFERING
 
     fun setLastPlayedItemListPosition(position: Int) {
         lastPlayedItemListPosition = position
     }
 
-    fun savePlayerCurrentPosition() {
-        if (exoPlayer != null)
-            lastItemPlayerPosition = exoPlayer?.currentPosition
-    }
-
-    fun setupSessionAndController() {
-//        if (this::mediaSession.isInitialized ||
-//            this::mediaSessionConnector.isInitialized ||
-//            this::mediaController.isInitialized
-//        )
-//            return
-//
-//        mediaSession =
-//            MediaSessionCompat(requireContext(), TrendFragment.TAG).apply { setMediaButtonReceiver(null) }
-//        mediaSessionConnector = MediaSessionConnector(mediaSession).apply {
-//            setPlayer(trendViewModel.exoPlayer)
-//        }
-//
-//        while (activity == null)
-//            return
-//
-//        mediaController =
-//            MediaControllerCompat(context, mediaSession.sessionToken).also { mediaController ->
-//                MediaControllerCompat.setMediaController(requireActivity(), mediaController)
-//            }
-    }
-
     companion object {
         private const val TREND_TRAILER_UI_STATE_KEY = "trend_trailer_ui_state"
         private const val LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY = "last_played_item_list_state"
-        private const val LAST_ITEM_VIDEO_POSITION_STATE_KEY = "last_item_video_position_state"
     }
 
 }
