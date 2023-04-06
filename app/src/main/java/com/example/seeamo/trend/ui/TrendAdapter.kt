@@ -13,7 +13,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.paging.PagingDataAdapter
@@ -27,16 +26,13 @@ import com.example.seeamo.core.utilize.helper.LayoutHelper
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 class TrendAdapter(
     private val context: Context,
     private val baseColor: BaseColor,
     private val layoutHelper: LayoutHelper,
     private val trendViewModel: TrendViewModel,
-    private val onPlayerExpandButtonClick: (StyledPlayerView) -> Unit
+    private val onPlayerExpandButtonClick: (StyledPlayerView, TrendResult) -> Unit
 ) : PagingDataAdapter<TrendResult, TrendViewHolder>(diffCallback = TrendResult.DIFF_CALLBACK),
     Player.Listener {
 
@@ -55,6 +51,7 @@ class TrendAdapter(
             playerPlayPauseButton =
                 holder.controlsLayout.getChildAt(0) as MaterialButton
 
+            trendViewModel.removePlayerListener(listener = this)
             trendViewModel.addPlayerListener(listener = this)
 
             lastPlayedViewHolder = holder
@@ -62,12 +59,10 @@ class TrendAdapter(
             holder.thumbnailLayout.visibility = View.GONE
             holder.playerView.visibility = View.VISIBLE
 
-            holder.playerView.player = trendViewModel.exoPlayer
+            holder.playerView.player = trendViewModel.player
             trendViewModel.playPlayer()
 
             startUpdatingRemainingPlayerTimeJob(holder = holder)
-
-            setPlayPauseButtonIcon(isPlaying = true)
         }
 
         holder.bind(
@@ -83,15 +78,20 @@ class TrendAdapter(
                         player = null
                         visibility = View.GONE
                     }
+                    removeWatchAgainButton()
                 }
 
-                holder.playerView.visibility = View.VISIBLE
-                holder.thumbnailLayout.visibility = View.GONE
+                holder.run {
+                    playerView.visibility = View.VISIBLE
+                    thumbnailLayout.visibility = View.GONE
 
-                holder.playerView.player = trendViewModel.exoPlayer
-                trendViewModel.startPlayer(trendTrailerUIState.trailerUrl)
+                    playerView.player = trendViewModel.player
+                    removeWatchAgainButton()
 
-                lastPlayedViewHolder = holder
+                    trendViewModel.startPlayer(trendTrailerUIState.trailerUrl)
+
+                    lastPlayedViewHolder = this
+                }
             },
             onPlayPauseButtonClick = {
                 val pauseToPlayAnimatedIcon =
@@ -99,7 +99,7 @@ class TrendAdapter(
                 val playToPauseAnimatedIcon =
                     ContextCompat.getDrawable(context, R.drawable.animated_play_to_pause)
 
-                val exoPlayer = trendViewModel.exoPlayer ?: return@bind
+                val exoPlayer = trendViewModel.player ?: return@bind
 
                 if (exoPlayer.isPlaying) {
                     exoPlayer.pause()
@@ -156,7 +156,7 @@ class TrendAdapter(
         )
     }
 
-    fun setPlayPauseButtonIcon(isPlaying: Boolean) {
+    private fun setPlayPauseButtonIcon(isPlaying: Boolean) {
         playerPlayPauseButton?.icon =
             if (isPlaying)
                 ContextCompat.getDrawable(
@@ -171,7 +171,7 @@ class TrendAdapter(
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
-        playerPlayPauseButton!!.showProgress(
+        playerPlayPauseButton?.showProgress(
             showProgress = playbackState == Player.STATE_BUFFERING,
             progressSize = CircularProgressDrawable.LARGE,
             progressColor = baseColor.white,
@@ -192,9 +192,11 @@ class TrendAdapter(
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        if (!isPlaying)
+        if (!trendViewModel.isPlayerBuffering() && !trendViewModel.isPlayerEnded())
+            setPlayPauseButtonIcon(isPlaying = isPlaying)
+        if (!isPlaying) {
             trendViewModel.stopUpdatingCurrentPositionJob()
-        else {
+        } else {
             val holder = lastPlayedViewHolder ?: return
             startUpdatingRemainingPlayerTimeJob(holder)
         }

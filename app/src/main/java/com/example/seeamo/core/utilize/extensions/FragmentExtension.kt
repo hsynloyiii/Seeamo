@@ -1,5 +1,7 @@
 package com.example.seeamo.core.utilize.extensions
 
+import android.content.res.Configuration
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -25,3 +27,26 @@ inline fun Fragment.launchScope(
     viewLifecycleOwner.lifecycleScope.launch(dispatchers) {
         block()
     }
+
+fun Fragment.setStatusBarBackgroundColor(color: Int) {
+    if (activity == null)
+        return
+
+    activity!!.window.statusBarColor = color
+}
+
+fun Fragment.setStatusBarAppearance(isLight: Boolean? = null, backToDefault: Boolean = false) {
+    if (activity == null)
+        return
+
+    if (isLight != null && !backToDefault)
+        WindowCompat.getInsetsController(
+            activity!!.window,
+            activity!!.window.decorView
+        ).isAppearanceLightStatusBars = isLight
+    else
+        when (requireContext().resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_YES -> setStatusBarAppearance(isLight = false)
+            Configuration.UI_MODE_NIGHT_NO -> setStatusBarAppearance(isLight = true)
+        }
+}

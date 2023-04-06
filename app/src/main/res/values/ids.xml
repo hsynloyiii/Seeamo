@@ -16,6 +16,15 @@
     <item name="trend_fragment_recycler_view" type="id" />
     <item name="trend_fragment_swipe_refresh_layout" type="id" />
     <item name="trend_fragment_error_text_view" type="id" />
+    <item name="trend_fragment_expanded_background_view" type="id" />
+    <item name="trend_fragment_expanded_player_view" type="id" />
+    <item name="trend_fragment_expanded_control_layout" type="id" />
+    <item name="trend_fragment_expanded_play_pause_button" type="id" />
+    <item name="trend_fragment_expanded_title" type="id" />
+    <item name="trend_fragment_expanded_back_button" type="id" />
+    <item name="trend_fragment_expanded_timer_slider" type="id" />
+    <item name="trend_fragment_expanded_position_text" type="id" />
+    <item name="trend_fragment_expanded_detail_button" type="id" />
     <item name="trend_fragment_item_poster_image_view" type="id" />
     <item name="trend_fragment_item_thumbnail_layout" type="id" />
     <item name="trend_fragment_item_title_text_view" type="id" />

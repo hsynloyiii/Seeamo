@@ -14,4 +14,8 @@
 
     <!-- MainActivity -->
     <string name="main_toolbar_search">Search</string>
+
+    <!-- TrendFragment -->
+    <string name="expanded_position_text">%1$s / %2$s</string>
+    <string name="detail_button_desc">Go to detail</string>
 </resources>

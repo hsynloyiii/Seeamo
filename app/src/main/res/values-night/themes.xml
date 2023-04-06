@@ -42,9 +42,11 @@
         <item name="red">@color/error_60</item>
 
         <!-- Status/Navigation bar color. -->
+<!--        <item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
 
         <!-- Theme style -->
         <item name="searchViewStyle">@style/Base.Widget.SearchView</item>

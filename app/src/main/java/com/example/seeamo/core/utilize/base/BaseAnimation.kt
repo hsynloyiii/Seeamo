@@ -103,5 +103,6 @@ class BaseAnimation {
         const val DURATION_MEDIUM_2 = 250L
         const val DURATION_LONG_1 = 300L
         const val DURATION_LONG_2 = 350L
+        const val DURATION_LONG_3 = 500L
     }
 }

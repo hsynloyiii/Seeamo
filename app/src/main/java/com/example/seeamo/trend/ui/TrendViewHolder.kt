@@ -136,10 +136,11 @@ class TrendViewHolder(
 
             setOnClickListener(playerViewClickListener)
 
+            minimumHeight = 200.toDp(context)
             mainLayout.addView(
                 this,
                 LayoutHelper.MATCH_PARENT,
-                200.toDp(context),
+                LayoutHelper.WRAP_CONTENT,
             )
         }
     }
@@ -300,7 +301,7 @@ class TrendViewHolder(
         startPlayer: (TrendTrailerUIState) -> Unit,
         onPlayPauseButtonClick: (MaterialButton) -> Unit,
         onMuteButtonClick: (MaterialButton) -> Unit,
-        onPlayerExpandButtonClick: (StyledPlayerView) -> Unit
+        onPlayerExpandButtonClick: (StyledPlayerView, TrendResult) -> Unit
     ) {
         ImageHelper.loadUriTo(
             posterImageView,
@@ -350,11 +351,14 @@ class TrendViewHolder(
         }
 
         (controlsLayout.getChildAt(3) as MaterialButton).setOnClickListener {
-            onPlayerExpandButtonClick(playerView)
+            onPlayerExpandButtonClick(playerView, trendResult)
         }
     }
 
     fun addWatchAgainButton() {
+        if (watchAgainButton.parent != null)
+            return
+
         watchAgainButton.setOnClickListener {
             trendViewModel.playAgain()
             removeWatchAgainButton()
@@ -380,7 +384,10 @@ class TrendViewHolder(
         showControlsLayout()
     }
 
-    private fun removeWatchAgainButton() {
+    fun removeWatchAgainButton() {
+        if (watchAgainButton.parent == null)
+            return
+
         controlsLayout.apply {
             getChildAt(0).visibility = View.VISIBLE
             removeView(watchAgainButton)

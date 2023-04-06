@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioManager
 import android.util.SparseArray
-import android.widget.TextView
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,7 +22,6 @@ import com.example.seeamo.trend.data.TrendRemoteMediator
 import com.example.seeamo.core.data.source.MovieDao
 import com.example.seeamo.core.data.source.MovieDatabase
 import com.example.seeamo.core.di.IODispatchers
-import com.example.seeamo.core.utilize.extensions.convertMillisToCountDownFormat
 import com.example.seeamo.core.utilize.extensions.getByState
 import com.example.seeamo.core.utilize.helper.ExoAudioFocusHelper
 import com.google.android.exoplayer2.ExoPlayer
@@ -32,8 +30,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.Listener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -115,10 +112,21 @@ class TrendViewModel @Inject constructor(
         }
 
     // ExoPlayer
-    var exoPlayer: ExoPlayer? = null
+    var player: ExoPlayer? = null
     private lateinit var audioManager: AudioManager
     private var defaultVideoVolume = 1f
     var isPlayerMuted = false
+
+    enum class PlayerViewState {
+        IS_IN_THUMB_MODE,
+        IS_IN_ZOOM_MODE
+    }
+    private val _playerViewState: MutableStateFlow<PlayerViewState?> = MutableStateFlow(null)
+    val playerViewState: StateFlow<PlayerViewState?>
+        get() = _playerViewState.asStateFlow()
+    fun setPlayerViewState(playerViewState: PlayerViewState) {
+        _playerViewState.update { playerViewState }
+    }
 
     var lastPlayedItemListPosition: Int?
         get() = saveStateHandle[LAST_PLAYED_ITEM_LIST_POSITION_STATE_KEY]
@@ -130,7 +138,7 @@ class TrendViewModel @Inject constructor(
         shouldStartPlayer: Boolean = false,
         mediaUrl: String? = null
     ) {
-        if (exoPlayer != null)
+        if (player != null)
             return
 
         audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -138,7 +146,7 @@ class TrendViewModel @Inject constructor(
             .setContentType(AudioAttributesCompat.CONTENT_TYPE_MUSIC)
             .setUsage(AudioAttributesCompat.USAGE_MEDIA)
             .build()
-        exoPlayer =
+        player =
             ExoAudioFocusHelper(
                 ExoPlayer.Builder(context).build(),
                 audioManager,
@@ -152,17 +160,18 @@ class TrendViewModel @Inject constructor(
     }
 
     fun releasePlayer() {
-        exoPlayer?.release()
-        exoPlayer = null
+        player?.release()
+        player = null
     }
 
     fun startPlayer(mediaUrl: String?) {
-        if (exoPlayer == null && mediaUrl == null)
+        if (player == null && mediaUrl == null)
             return
 
-        with(exoPlayer!!) {
+        with(player!!) {
             clearMediaItems()
             setMediaItem(MediaItem.fromUri(mediaUrl!!))
+            seekTo(0)
             prepare()
             playWhenReady = true
             if (isPlayerMuted) {
@@ -174,44 +183,44 @@ class TrendViewModel @Inject constructor(
     }
 
     fun removePlayerListener(listener: Listener) {
-        exoPlayer?.removeListener(listener)
+        player?.removeListener(listener)
     }
 
     fun addPlayerListener(listener: Listener) {
-        exoPlayer?.addListener(listener)
+        player?.addListener(listener)
     }
 
     fun playPlayer() {
-        exoPlayer?.play()
+        player?.play()
     }
 
     fun pausePlayer() {
-        exoPlayer?.pause()
+        player?.pause()
     }
 
     fun mutePlayer() {
-        exoPlayer?.volume = 0f
+        player?.volume = 0f
         isPlayerMuted = true
     }
 
     fun unMutePlayer() {
-        exoPlayer?.volume = defaultVideoVolume
+        player?.volume = defaultVideoVolume
         isPlayerMuted = false
     }
 
     fun playAgain() {
-        exoPlayer?.seekTo(0)
+        player?.seekTo(0)
         playPlayer()
     }
 
-    var currentPositionJob: Job? = null
+    private var currentPositionJob: Job? = null
     fun startUpdatingCurrentPositionJob(invoke: (currentPosition: Long, duration: Long) -> Unit) {
-        if (exoPlayer == null && currentPositionJob != null)
+        if (player == null && currentPositionJob != null)
             return
         currentPositionJob = viewModelScope.launch {
             while (isActive) {
-                val currentPosition = exoPlayer!!.currentPosition
-                val duration = exoPlayer!!.duration
+                val currentPosition = player!!.currentPosition
+                val duration = player!!.duration
                 if (currentPosition > 0)
                     invoke(currentPosition, duration)
                 delay(1000)
@@ -224,14 +233,27 @@ class TrendViewModel @Inject constructor(
         currentPositionJob = null
     }
 
-    fun isPlayerPlaying(): Boolean = exoPlayer?.isPlaying == true
-    fun isPlayerPaused(): Boolean = exoPlayer?.isPlaying == false
-    fun isPlayerEnded(): Boolean = exoPlayer?.playbackState == Player.STATE_ENDED
-    fun isPlayerBuffering(): Boolean = exoPlayer?.playbackState == Player.STATE_BUFFERING
+    fun isPlayerPlaying(): Boolean {
+        return if (player == null) false else player!!.isPlaying
+    }
+
+    fun isPlayerPaused(): Boolean {
+        return if (player == null) true else !player!!.isPlaying
+    }
+
+    fun isPlayerEnded(): Boolean {
+        return if (player == null) false else player!!.playbackState == Player.STATE_ENDED
+    }
+
+    fun isPlayerBuffering(): Boolean {
+        return if (player == null) false else player!!.playbackState == Player.STATE_BUFFERING
+    }
 
     fun setLastPlayedItemListPosition(position: Int) {
         lastPlayedItemListPosition = position
     }
+
+
 
     companion object {
         private const val TREND_TRAILER_UI_STATE_KEY = "trend_trailer_ui_state"

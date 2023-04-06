@@ -78,7 +78,7 @@ fun View.applyPaddingWindowInsets(
             left,
             top,
             right,
-             bottom
+            bottom
         )
     }
 }
@@ -436,11 +436,13 @@ fun MaterialButtonToggleGroup.set(
 fun View.screenSize(): Point {
     val point = Point()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        val metrics = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).currentWindowMetrics
+        val metrics =
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).currentWindowMetrics
         point.set(metrics.bounds.width(), metrics.bounds.height())
         return point
     } else {
-        val display = (context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).displays[0]
+        val display =
+            (context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).displays[0]
         @Suppress("DEPRECATION")
         display.getSize(point)
         return point

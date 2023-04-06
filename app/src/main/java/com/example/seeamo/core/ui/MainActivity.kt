@@ -5,11 +5,11 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.AnimationUtils
 import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.get
-import androidx.core.view.setPadding
+import androidx.core.view.*
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
@@ -60,12 +60,13 @@ class MainActivity : BaseActivity() {
 
             statusBarForeground =
                 MaterialShapeDrawable.createWithElevationOverlay(context)
+//            setStatusBarForegroundColor(baseColor.red)
 
             setBackgroundColor(baseColor.background)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                outlineAmbientShadowColor = baseColor.onBackground.withAlpha(0.52)
-                outlineSpotShadowColor = baseColor.onBackground.withAlpha(0.52)
+                outlineAmbientShadowColor = baseColor.onBackground.withAlpha(0.64)
+                outlineSpotShadowColor = baseColor.onBackground.withAlpha(0.64)
             }
 
             mainLayout.addView(
@@ -73,6 +74,7 @@ class MainActivity : BaseActivity() {
                 LayoutHelper.MATCH_PARENT,
                 LayoutHelper.WRAP_CONTENT
             )
+//            applyMarginWindowInsets(applyTop = true)
         }
 
         toolbar = MaterialToolbar(this).apply {
@@ -122,10 +124,10 @@ class MainActivity : BaseActivity() {
                 this,
                 layoutHelper.createCoordinator(
                     LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT,
-                    behavior = ScrollingViewWithBottomNavigationBehavior()
+                    behavior = AppBarLayout.ScrollingViewBehavior()
                 )
             )
-            applyPaddingWindowInsets(applyBottom = true)
+//            applyPaddingWindowInsets(applyBottom = true)
         }
 
         bottomNavigationView = BottomNavigationView(this).apply {
@@ -157,13 +159,15 @@ class MainActivity : BaseActivity() {
                     insetEdge = Gravity.BOTTOM
                 )
             )
-            applyMarginWindowInsets(applyBottom = true)
+            applyPaddingWindowInsets(applyBottom = true)
         }
 
     }
 
     override fun setup(savedInstanceState: Bundle?) {
         logDebug { "setup" }
+//        setStatusBarAppearance(isLight = true)
+//        window.statusBarColor = baseColor.background
         setupNavGraph()
     }
 
@@ -297,6 +301,21 @@ class MainActivity : BaseActivity() {
                     return true
                 }
             })
+        }
+    }
+
+    fun toggleBottomNavigation(shouldShow: Boolean) {
+        bottomNavigationView.visibility = if (shouldShow) View.VISIBLE else View.GONE
+    }
+
+    fun toggleAppBarLayout(shouldShow: Boolean) {
+        appBarLayout.apply {
+            if (!shouldShow) {
+                fitsSystemWindows = false
+                setExpanded(false, true)
+            } else {
+                fitsSystemWindows = true
+            }
         }
     }
 
