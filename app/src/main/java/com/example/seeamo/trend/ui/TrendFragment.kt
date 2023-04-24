@@ -5,7 +5,6 @@ import android.animation.AnimatorSet
 import android.animation.LayoutTransition
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
@@ -29,10 +28,9 @@ import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -40,14 +38,13 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.seeamo.R
 import com.example.seeamo.core.ui.MainActivity
+import com.example.seeamo.core.ui.NavRoutes
 import com.example.seeamo.core.utilize.base.BaseAnimation
 import com.example.seeamo.core.utilize.base.BaseFragment
 import com.example.seeamo.core.utilize.extensions.*
-import com.example.seeamo.core.utilize.helper.DrawableHelper
 import com.example.seeamo.core.utilize.helper.LayoutHelper
 import com.example.seeamo.core.utilize.helper.ViewHelper
 import com.example.seeamo.data.model.TrendResult
-import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.material.button.MaterialButton
@@ -58,7 +55,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class TrendFragment : BaseFragment(false), Player.Listener {
@@ -557,7 +553,7 @@ class TrendFragment : BaseFragment(false), Player.Listener {
             interpolator = DecelerateInterpolator()
             doOnEnd {
                 expandingPlayerViewAnimator = null
-                expandedControlLayoutActionInitializer(trendResult, thumbPlayerView!!)
+                expandedControlLayoutActionInitializer(trendResult)
             }
             doOnCancel {
                 expandingPlayerViewAnimator = null
@@ -568,8 +564,6 @@ class TrendFragment : BaseFragment(false), Player.Listener {
         var mLastTouchY = 0f
         var mLastTouchX = 0f
 
-        var mFirstObjectY = 0f
-        var mFirstObjectX = 0f
         var pointerID = 1000
         expandedPlayerView.apply {
             setOnTouchListener { _, event ->
@@ -577,7 +571,6 @@ class TrendFragment : BaseFragment(false), Player.Listener {
                     when (event.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
                             mLastTouchY = event.rawY
-                            mFirstObjectY = y
                             pointerID = event.getPointerId(0)
                         }
                         MotionEvent.ACTION_MOVE -> {
@@ -609,7 +602,7 @@ class TrendFragment : BaseFragment(false), Player.Listener {
                             pointerID = 1000
                             val objectTranslationY = event.rawY - mLastTouchY
                             if (objectTranslationY > 400 || objectTranslationY < -400)
-                                zoomOutToThumb(thumbPlayerView!!)
+                                zoomOutToThumb()
                             else {
                                 animate()
                                     .scaleX(1f)
@@ -635,8 +628,6 @@ class TrendFragment : BaseFragment(false), Player.Listener {
                     when (event.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
                             mLastTouchX = event.rawX - translationX
-
-                            mFirstObjectX = x
                             pointerID = event.getPointerId(0)
                         }
                         MotionEvent.ACTION_MOVE -> {
@@ -717,7 +708,8 @@ class TrendFragment : BaseFragment(false), Player.Listener {
         )
     }
 
-    private fun zoomOutToThumb(thumbView: View) {
+    private fun zoomOutToThumb() {
+        if (thumbPlayerView == null) return
         expandingPlayerViewAnimator = AnimatorSet().apply {
             playTogether(
                 ObjectAnimator.ofFloat(expandedPlayerView, View.X, startExpandingBounds.left),
@@ -742,7 +734,7 @@ class TrendFragment : BaseFragment(false), Player.Listener {
                 }
                 expandedViewBackground.visibility = View.GONE
                 setStatusBarAppearance(backToDefault = true)
-                (thumbView as StyledPlayerView).apply {
+                thumbPlayerView!!.apply {
                     alpha = 1f
                     player = trendViewModel.player
                 }
@@ -793,7 +785,7 @@ class TrendFragment : BaseFragment(false), Player.Listener {
         }
     }
 
-    private fun expandedControlLayoutActionInitializer(trendResult: TrendResult, thumbView: View) {
+    private fun expandedControlLayoutActionInitializer(trendResult: TrendResult) {
         val player = trendViewModel.player ?: return
 
         expandedControlLayout.run {
@@ -819,7 +811,7 @@ class TrendFragment : BaseFragment(false), Player.Listener {
 
             // Back Button
             (getChildAt(1) as MaterialButton).setOnClickListener {
-                zoomOutToThumb(thumbView)
+                zoomOutToThumb()
             }
 
             // Title
@@ -861,7 +853,9 @@ class TrendFragment : BaseFragment(false), Player.Listener {
             // Detail Button
             val detailButton = getChildAt(5) as MaterialButton
             detailButton.setOnClickListener {
-                // Go to detail page
+                findNavController().navigateSlide(
+                    route = NavRoutes.Main.MOVIE_DETAIL_FRAGMENT,
+                )
             }
         }
     }
@@ -1014,6 +1008,8 @@ class TrendFragment : BaseFragment(false), Player.Listener {
         super.onPause()
         logDebug { "onPause" }
 //        trendViewModel.savePlayerCurrentPosition()
+        if (findNavController().currentBackStackEntry?.destination?.route == NavRoutes.Main.MOVIE_DETAIL_FRAGMENT)
+            zoomOutToThumb()
     }
 
     override fun onStop() {
