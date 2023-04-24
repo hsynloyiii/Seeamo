@@ -26,6 +26,7 @@ import com.example.seeamo.trend.ui.TrendFragment
 import com.example.seeamo.core.utilize.base.BaseActivity
 import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.LayoutHelper
+import com.example.seeamo.trend.ui.MovieDetailFragment
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -35,7 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
-    private lateinit var navHostFragment: NavHostFragment
+    lateinit var navHostFragment: NavHostFragment
     private lateinit var navController: NavController
 
     private lateinit var mainLayout: CoordinatorLayout
@@ -194,6 +195,9 @@ class MainActivity : BaseActivity() {
             }
             fragment<MenuFragment>(NavRoutes.Main.MENU_FRAGMENT).apply {
                 label = resources.getString(R.string.menu_fragment)
+            }
+            fragment<MovieDetailFragment>(NavRoutes.Main.MOVIE_DETAIL_FRAGMENT).apply {
+                label = resources.getString(R.string.movie_detail_fragment)
             }
         }
 

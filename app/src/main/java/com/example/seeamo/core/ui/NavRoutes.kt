@@ -9,6 +9,8 @@ object NavRoutes {
         const val NEWS_FRAGMENT = "news_fragment"
         const val MENU_FRAGMENT = "menu_fragment"
 
+        const val MOVIE_DETAIL_FRAGMENT = "movie_detail_fragment"
+
         const val START_DESTINATION = TREND_FRAGMENT
     }
 

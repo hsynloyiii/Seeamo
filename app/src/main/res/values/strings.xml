@@ -12,6 +12,8 @@
     <string name="news_fragment">NewsFragment</string>
     <string name="menu_fragment">MenuFragment</string>
 
+    <string name="movie_detail_fragment">MovieDetailFragment</string>
+
     <!-- MainActivity -->
     <string name="main_toolbar_search">Search</string>
 
