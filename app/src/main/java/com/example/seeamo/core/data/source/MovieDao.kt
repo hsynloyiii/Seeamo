@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.seeamo.data.model.TrendRemoteKey
-import com.example.seeamo.data.model.TrendResult
+import com.example.seeamo.trend.data.TrendRemoteKey
+import com.example.seeamo.trend.data.TrendResult
 
 @Dao
 interface MovieDao {

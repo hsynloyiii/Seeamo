@@ -32,8 +32,13 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideRegistrationApi(retrofit: Retrofit): ApiService.Trend =
+    fun provideTrendApi(retrofit: Retrofit): ApiService.Trend =
         retrofit.create(ApiService.Trend::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCoreApi(retrofit: Retrofit): ApiService.Core =
+        retrofit.create(ApiService.Core::class.java)
 
 
     // Database

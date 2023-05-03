@@ -1,9 +1,10 @@
-package com.example.seeamo.data.model
+package com.example.seeamo.trend.data
 
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.seeamo.core.data.model.UIState
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
@@ -75,12 +76,6 @@ data class TrendTrailerResult(
     val id: String
 )
 
-enum class UIState {
-    NONE,
-    LOADING,
-    SUCCEED,
-    FAILED
-}
 
 @Parcelize
 data class TrendTrailerUIState(

@@ -1,8 +1,6 @@
 package com.example.seeamo.trend.data
 
 import com.example.seeamo.core.data.Repository
-import com.example.seeamo.data.model.TrendResponse
-import com.example.seeamo.data.model.TrendTrailerResponse
 import com.example.seeamo.core.data.ApiService
 import com.example.seeamo.core.data.Resource
 import com.example.seeamo.core.utilize.extensions.requestResource

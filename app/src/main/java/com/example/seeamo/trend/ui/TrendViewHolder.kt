@@ -18,7 +18,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.example.seeamo.R
-import com.example.seeamo.data.model.TrendResult
+import com.example.seeamo.core.data.model.UIState
+import com.example.seeamo.trend.data.TrendResult
 import com.example.seeamo.core.utilize.base.BaseAnimation
 import com.example.seeamo.core.utilize.base.BaseColor
 import com.example.seeamo.core.utilize.extensions.*
@@ -26,8 +27,7 @@ import com.example.seeamo.core.utilize.helper.DrawableHelper
 import com.example.seeamo.core.utilize.helper.ImageHelper
 import com.example.seeamo.core.utilize.helper.LayoutHelper
 import com.example.seeamo.core.utilize.helper.ViewHelper
-import com.example.seeamo.data.model.TrendTrailerUIState
-import com.example.seeamo.data.model.UIState
+import com.example.seeamo.trend.data.TrendTrailerUIState
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.material.button.MaterialButton

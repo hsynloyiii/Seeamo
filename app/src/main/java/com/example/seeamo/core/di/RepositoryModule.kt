@@ -1,5 +1,6 @@
 package com.example.seeamo.core.di
 
+import com.example.seeamo.core.data.CoreRepository
 import com.example.seeamo.core.data.Repository
 import com.example.seeamo.trend.data.TrendRepository
 import dagger.Module
@@ -14,8 +15,15 @@ class RepoModule {
 
     @Singleton
     @Provides
-    fun provideRegistrationRepo(
+    fun provideTrendRepo(
         trendRepository: TrendRepository
     ): Repository.Trend = trendRepository
+
+    @Singleton
+    @Provides
+    fun provideCoreRepo(
+        coreRepository: CoreRepository
+    ): Repository.Core = coreRepository
+
 
 }

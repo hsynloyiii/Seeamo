@@ -20,4 +20,7 @@
     <!-- TrendFragment -->
     <string name="expanded_position_text">%1$s / %2$s</string>
     <string name="detail_button_desc">Go to detail</string>
+
+    <!-- MovieDetailFragment -->
+    <string name="movie_desc_title">Description</string>
 </resources>

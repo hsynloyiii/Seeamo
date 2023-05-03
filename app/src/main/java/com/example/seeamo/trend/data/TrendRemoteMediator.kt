@@ -8,9 +8,6 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.seeamo.core.data.source.MovieDao
 import com.example.seeamo.core.data.source.MovieDatabase
-import com.example.seeamo.data.model.TrendRemoteKey
-import com.example.seeamo.data.model.TrendResult
-import com.example.seeamo.trend.ui.TrendFragment
 import com.example.seeamo.core.utilize.extensions.getByState
 import com.example.seeamo.core.utilize.extensions.logError
 import kotlinx.coroutines.delay

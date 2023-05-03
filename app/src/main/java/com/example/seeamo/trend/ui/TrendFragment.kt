@@ -1,4 +1,4 @@
-package com.example.seeamo.trend.ui
+ package com.example.seeamo.trend.ui
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -9,6 +9,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
@@ -38,13 +39,13 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.seeamo.R
 import com.example.seeamo.core.ui.MainActivity
-import com.example.seeamo.core.ui.NavRoutes
+import com.example.seeamo.core.utilize.navigation.NavRoutes
 import com.example.seeamo.core.utilize.base.BaseAnimation
 import com.example.seeamo.core.utilize.base.BaseFragment
 import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.LayoutHelper
 import com.example.seeamo.core.utilize.helper.ViewHelper
-import com.example.seeamo.data.model.TrendResult
+import com.example.seeamo.trend.data.TrendResult
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.material.button.MaterialButton
@@ -56,7 +57,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-@AndroidEntryPoint
+ @AndroidEntryPoint
 class TrendFragment : BaseFragment(false), Player.Listener {
 
     companion object {
@@ -853,9 +854,13 @@ class TrendFragment : BaseFragment(false), Player.Listener {
             // Detail Button
             val detailButton = getChildAt(5) as MaterialButton
             detailButton.setOnClickListener {
+                val id = trendResult.id.toString()
+                val title = trendResult.original_title
+                val trendResultBackgroundPath = Uri.encode(trendResult.fullBackdropPath)
                 findNavController().navigateSlide(
-                    route = NavRoutes.Main.MOVIE_DETAIL_FRAGMENT,
+                    route = "${NavRoutes.Main.MOVIE_DETAIL_FRAGMENT}/$id|$title|$trendResultBackgroundPath",
                 )
+                zoomOutToThumb()
             }
         }
     }

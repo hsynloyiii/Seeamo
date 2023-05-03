@@ -1,4 +1,4 @@
-package com.example.seeamo.core.ui
+package com.example.seeamo.core.utilize.navigation
 
 object NavRoutes {
 

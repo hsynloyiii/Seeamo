@@ -3,15 +3,14 @@ package com.example.seeamo.core.ui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
-import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.AnimationUtils
 import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.*
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.fragment
@@ -26,7 +25,8 @@ import com.example.seeamo.trend.ui.TrendFragment
 import com.example.seeamo.core.utilize.base.BaseActivity
 import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.LayoutHelper
-import com.example.seeamo.trend.ui.MovieDetailFragment
+import com.example.seeamo.core.utilize.navigation.NavArguments
+import com.example.seeamo.core.utilize.navigation.NavRoutes
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -59,8 +59,7 @@ class MainActivity : BaseActivity() {
             fitsSystemWindows = true
             isLiftOnScroll = false
 
-            statusBarForeground =
-                MaterialShapeDrawable.createWithElevationOverlay(context)
+            statusBarForeground = MaterialShapeDrawable.createWithElevationOverlay(context)
 //            setStatusBarForegroundColor(baseColor.red)
 
             setBackgroundColor(baseColor.background)
@@ -71,9 +70,7 @@ class MainActivity : BaseActivity() {
             }
 
             mainLayout.addView(
-                this,
-                LayoutHelper.MATCH_PARENT,
-                LayoutHelper.WRAP_CONTENT
+                this, LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT
             )
 //            applyMarginWindowInsets(applyTop = true)
         }
@@ -94,37 +91,35 @@ class MainActivity : BaseActivity() {
                     maxWidth = Int.MAX_VALUE
 
                     setOnSearchClickListener {
-                        startAnimation(
-                            AnimationUtils.loadAnimation(this@MainActivity, R.anim.fade_in).apply {
-                                setAnimationListener(null)
-                            })
+                        startAnimation(AnimationUtils.loadAnimation(
+                            this@MainActivity,
+                            R.anim.fade_in
+                        ).apply {
+                            setAnimationListener(null)
+                        })
                     }
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    contentDescription = resources.getString(R.string.main_toolbar_search)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) contentDescription =
+                    resources.getString(R.string.main_toolbar_search)
             }
 
             appBarLayout.addView(
-                this,
-                layoutHelper.createAppBarLayout(
+                this, layoutHelper.createAppBarLayout(
                     LayoutHelper.MATCH_PARENT,
                     56,
-                    scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
-                            AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
-                            AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+                    scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
                 )
             )
         }
 
         fragmentContainerView = (layoutInflater.inflate(
-            R.layout.activity_container_fragment,
-            null
+            R.layout.activity_container_fragment, null
         ) as FragmentContainerView).apply {
             mainLayout.addView(
-                this,
-                layoutHelper.createCoordinator(
-                    LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT,
+                this, layoutHelper.createCoordinator(
+                    LayoutHelper.MATCH_PARENT,
+                    LayoutHelper.MATCH_PARENT,
                     behavior = AppBarLayout.ScrollingViewBehavior()
                 )
             )
@@ -139,8 +134,7 @@ class MainActivity : BaseActivity() {
             setBackgroundColor(baseColor.background)
             itemRippleColor = baseColor.baseColorStateList(baseColor.surfaceVariant.withAlpha(0.32))
             itemTextColor = baseColor.checkedColorStateList(
-                checkedColor = baseColor.darkBlue,
-                unCheckedColor = baseColor.onBackground
+                checkedColor = baseColor.darkBlue, unCheckedColor = baseColor.onBackground
             )
             itemIconTintList = null
             itemPaddingTop = 0
@@ -152,8 +146,7 @@ class MainActivity : BaseActivity() {
 
             minimumHeight = 56.toDp(context)
             mainLayout.addView(
-                this,
-                layoutHelper.createCoordinator(
+                this, layoutHelper.createCoordinator(
                     LayoutHelper.MATCH_PARENT,
                     LayoutHelper.WRAP_CONTENT,
                     gravity = Gravity.BOTTOM,
@@ -196,8 +189,14 @@ class MainActivity : BaseActivity() {
             fragment<MenuFragment>(NavRoutes.Main.MENU_FRAGMENT).apply {
                 label = resources.getString(R.string.menu_fragment)
             }
-            fragment<MovieDetailFragment>(NavRoutes.Main.MOVIE_DETAIL_FRAGMENT).apply {
+            fragment<MovieDetailFragment>(
+                "${NavRoutes.Main.MOVIE_DETAIL_FRAGMENT}/{${NavArguments.MOVIE_DETAIL_ID_TITLE_BACKGROUND}}"
+            ).apply {
                 label = resources.getString(R.string.movie_detail_fragment)
+
+                argument(NavArguments.MOVIE_DETAIL_ID_TITLE_BACKGROUND) {
+                    type = NavType.StringType
+                }
             }
         }
 
@@ -234,8 +233,9 @@ class MainActivity : BaseActivity() {
             setOnItemReselectedListener {
                 when (it.itemId) {
                     menuIds[0] -> {
-                        (navHostFragment.childFragmentManager.fragments[0] as TrendFragment)
-                            .trendRecyclerView.scrollToPosition(0)
+                        (navHostFragment.childFragmentManager.fragments[0] as TrendFragment).trendRecyclerView.scrollToPosition(
+                            0
+                        )
                         appBarLayout.setExpanded(true, true)
                     }
                 }
@@ -248,32 +248,32 @@ class MainActivity : BaseActivity() {
             when (destination.route) {
                 NavRoutes.Main.TREND_FRAGMENT -> {
                     setupToolbarWithNavController(
-                        title = resources.getString(R.string.app_name),
-                        isSearchMenuVisible = false
+                        title = resources.getString(R.string.app_name), isSearchMenuVisible = false
                     ) {}
                 }
+
                 NavRoutes.Main.MOVIE_FRAGMENT -> {
                     setupToolbarWithNavController(
-                        title = resources.getString(R.string.movie),
-                        isSearchMenuVisible = false
+                        title = resources.getString(R.string.movie), isSearchMenuVisible = false
                     ) {}
                 }
+
                 NavRoutes.Main.SEARCH_FRAGMENT -> {
                     setupToolbarWithNavController(
                         title = resources.getString(R.string.search),
                         searchQueryHint = "Search all movie/series ..."
                     ) {}
                 }
+
                 NavRoutes.Main.NEWS_FRAGMENT -> {
                     setupToolbarWithNavController(
-                        title = resources.getString(R.string.news),
-                        isSearchMenuVisible = false
+                        title = resources.getString(R.string.news), isSearchMenuVisible = false
                     ) {}
                 }
+
                 NavRoutes.Main.MENU_FRAGMENT -> {
                     setupToolbarWithNavController(
-                        title = resources.getString(R.string.menu),
-                        isSearchMenuVisible = false
+                        title = resources.getString(R.string.menu), isSearchMenuVisible = false
                     ) {}
                 }
             }

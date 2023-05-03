@@ -18,6 +18,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.Behavior
 import com.google.android.material.appbar.AppBarLayout.ChildScrollEffect
 import com.google.android.material.appbar.AppBarLayout.LayoutParams.ScrollFlags
+import com.google.android.material.appbar.CollapsingToolbarLayout
 
 class LayoutHelper(private val context: Context?) {
 
@@ -290,4 +291,27 @@ class LayoutHelper(private val context: Context?) {
     val largeMargin2 = 32.toDp(context)
     val extraLargeMargin = 48.toDp(context)
 
+
+    // CollapsingToolbarLayout
+    fun createCollapsingToolbarLayout(
+        width: Int,
+        height: Int,
+        collapseMode: Int? = null,
+        @GravityInt gravity: Int = Gravity.NO_GRAVITY,
+        endMargin: Int = 0,
+        topMargin: Int = 0,
+        startMargin: Int = 0,
+        bottomMargin: Int = 0,
+    ): CollapsingToolbarLayout.LayoutParams =
+        CollapsingToolbarLayout.LayoutParams(getSize(width), getSize(height)).apply {
+            this.gravity = gravity
+
+            if (collapseMode != null)
+                this.collapseMode = collapseMode
+
+            this.marginEnd = endMargin
+            this.topMargin = topMargin
+            this.marginStart = startMargin
+            this.bottomMargin = bottomMargin
+        }
 }

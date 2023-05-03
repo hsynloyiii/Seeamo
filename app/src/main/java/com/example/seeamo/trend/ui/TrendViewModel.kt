@@ -15,8 +15,8 @@ import androidx.paging.cachedIn
 import at.huber.youtubeExtractor.VideoMeta
 import at.huber.youtubeExtractor.YouTubeExtractor
 import at.huber.youtubeExtractor.YtFile
-import com.example.seeamo.data.model.TrendTrailerUIState
-import com.example.seeamo.data.model.UIState
+import com.example.seeamo.core.data.model.UIState
+import com.example.seeamo.trend.data.TrendTrailerUIState
 import com.example.seeamo.trend.data.TrendRepository
 import com.example.seeamo.trend.data.TrendRemoteMediator
 import com.example.seeamo.core.data.source.MovieDao
@@ -252,7 +252,6 @@ class TrendViewModel @Inject constructor(
     fun setLastPlayedItemListPosition(position: Int) {
         lastPlayedItemListPosition = position
     }
-
 
 
     companion object {

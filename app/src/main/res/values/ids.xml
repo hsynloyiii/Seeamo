@@ -38,4 +38,11 @@
     <item name="trend_fragment_item_player_arrow_expand_button" type="id" />
     <item name="trend_fragment_item_watch_again_button" type="id" />
 
+    <!-- MovieDetailFragment -->
+    <item name="movie_detail_fragment_app_bar" type="id" />
+    <item name="movie_detail_fragment_collapsing_toolbar" type="id" />
+    <item name="movie_detail_fragment_collapsing_toolbar_background_image" type="id" />
+    <item name="movie_detail_fragment_toolbar" type="id" />
+    <item name="movie_detail_fragment_content_progress_bar" type="id" />
+    <item name="movie_detail_fragment_content_scroll_view" type="id" />
 </resources>

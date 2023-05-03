@@ -19,7 +19,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.example.seeamo.R
-import com.example.seeamo.data.model.TrendResult
+import com.example.seeamo.trend.data.TrendResult
 import com.example.seeamo.core.utilize.base.BaseColor
 import com.example.seeamo.core.utilize.extensions.*
 import com.example.seeamo.core.utilize.helper.LayoutHelper
